@@ -151,7 +151,9 @@ export const getEnvironment = async (space: Space, branchNames: BranchNames): Pr
   let environmentType: EnvironmentType =
     branchNames.baseRef === branchNames.defaultBranch ? CONTENTFUL_ALIAS : 'feature';
 
-  if (github.context.payload?.pull_request?.merged) {
+  // If pull request have been merged or there exists a headRef (comes only from a PR) then set
+  // enironment type to feature
+  if (github.context.payload?.pull_request?.merged || branchNames.headRef ) {
     environmentType = 'feature';
   }
 
@@ -164,7 +166,7 @@ export const getEnvironment = async (space: Space, branchNames: BranchNames): Pr
           branchName: branchNames.headRef,
         });
 
-  Logger.verbose(`environmentId: "${environmentId}"`);
+  Logger.verbose(`Environment id: "${environmentId}"`);
 
   // If environment matches ${CONTENTFUL_ALIAS} ("master")
   // Then return it without further actions
