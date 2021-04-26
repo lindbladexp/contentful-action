@@ -98722,16 +98722,16 @@ var Logger = {
         console.log(source_default().white(message));
     },
     success: function (message) {
-        console.log("✅", source_default().green(message));
+        console.log('✅', source_default().green(message));
     },
     error: function (message) {
-        console.log("💩", source_default().red(message));
+        console.log('💩', source_default().red(message));
     },
     warn: function (message) {
-        console.log("⚠️", source_default().yellow(message));
+        console.log('⚠️', source_default().yellow(message));
     },
     verbose: function (message) {
-        if (LOG_LEVEL === "verbose") {
+        if (LOG_LEVEL === 'verbose') {
             console.log(source_default().white(message));
         }
     },
@@ -98750,25 +98750,19 @@ var delay = function (time) {
  * filenameToVersion("1.js") // "1"
  * filenameToVersion("1.0.1.js") // "1.0.1"
  */
-var filenameToVersion = function (file) {
-    return file.replace(/\.js$/, "").replace(/_/g, ".");
-};
+var filenameToVersion = function (file) { return file.replace(/\.js$/, '').replace(/_/g, '.'); };
 /**
  * Convert versions to filenames
  * @example
  * versionToFilename("1") // "1.js"
  * versionToFilename("1.0.1") // "1.0.1.js"
  */
-var versionToFilename = function (version) {
-    return version.replace(/\\./g, "_") + ".js";
-};
+var versionToFilename = function (version) { return version.replace(/\\./g, '_') + ".js"; };
 /**
  * Convert a branchName to a valid environmentName
  * @param branchName
  */
-var branchNameToEnvironmentName = function (branchName) {
-    return branchName.replace(/[\/_.]/g, "-");
-};
+var branchNameToEnvironmentName = function (branchName) { return branchName.replace(/[\/_.]/g, '-'); };
 var Matcher;
 (function (Matcher) {
     Matcher["YY"] = "YY";
@@ -98781,24 +98775,14 @@ var Matcher;
     Matcher["branch"] = "branch";
 })(Matcher || (Matcher = {}));
 var matchers = (utils_a = {},
-    utils_a[Matcher.ss] = function (date) {
-        return ("" + date.getUTCSeconds()).padStart(2, "0");
-    },
-    utils_a[Matcher.hh] = function (date) {
-        return ("" + date.getUTCHours()).padStart(2, "0");
-    },
-    utils_a[Matcher.mm] = function (date) {
-        return ("" + date.getUTCMinutes()).padStart(2, "0");
-    },
+    utils_a[Matcher.ss] = function (date) { return ("" + date.getUTCSeconds()).padStart(2, '0'); },
+    utils_a[Matcher.hh] = function (date) { return ("" + date.getUTCHours()).padStart(2, '0'); },
+    utils_a[Matcher.mm] = function (date) { return ("" + date.getUTCMinutes()).padStart(2, '0'); },
     utils_a[Matcher.YYYY] = function (date) { return "" + date.getUTCFullYear(); },
     utils_a[Matcher.YY] = function (date) { return ("" + date.getUTCFullYear()).substr(2, 2); },
-    utils_a[Matcher.MM] = function (date) {
-        return ("" + (date.getUTCMonth() + 1)).padStart(2, "0");
-    },
-    utils_a[Matcher.DD] = function (date) { return ("" + date.getDate()).padStart(2, "0"); },
-    utils_a[Matcher.branch] = function (branchName) {
-        return branchNameToEnvironmentName(branchName);
-    },
+    utils_a[Matcher.MM] = function (date) { return ("" + (date.getUTCMonth() + 1)).padStart(2, '0'); },
+    utils_a[Matcher.DD] = function (date) { return ("" + date.getDate()).padStart(2, '0'); },
+    utils_a[Matcher.branch] = function (branchName) { return branchNameToEnvironmentName(branchName); },
     utils_a);
 /**
  *
@@ -98845,7 +98829,7 @@ var getBranchNames = function () {
         default:
             return {
                 headRef: null,
-                baseRef: payload.ref.replace(/^refs\/heads\//, ""),
+                baseRef: payload.ref.replace(/^refs\/heads\//, ''),
                 defaultBranch: defaultBranch,
             };
     }
@@ -98859,23 +98843,22 @@ var getBranchNames = function () {
 var getEnvironment = function (space, branchNames) { return Object(tslib.__awaiter)(void 0, void 0, void 0, function () {
     var environmentNames, environmentType, environmentId, environment, e_1;
     var _a, _b;
-    var _c;
-    return Object(tslib.__generator)(this, function (_d) {
-        switch (_d.label) {
+    var _c, _d;
+    return Object(tslib.__generator)(this, function (_e) {
+        switch (_e.label) {
             case 0:
                 environmentNames = {
                     base: branchNameToEnvironmentName(branchNames.baseRef),
-                    head: branchNames.headRef
-                        ? branchNameToEnvironmentName(branchNames.headRef)
-                        : null,
+                    head: branchNames.headRef ? branchNameToEnvironmentName(branchNames.headRef) : null,
                 };
                 // If the Pull Request is merged and the base is the repository default_name (master|main, ...)
                 // Then create an environment name for the given master_pattern
                 // Else create an environment name for the given feature_pattern
                 Logger.verbose("MASTER_PATTERN: " + MASTER_PATTERN + " | FEATURE_PATTERN: " + FEATURE_PATTERN);
-                environmentType = branchNames.baseRef === branchNames.defaultBranch && ((_c = github.context.payload.pull_request) === null || _c === void 0 ? void 0 : _c.merged)
-                    ? CONTENTFUL_ALIAS
-                    : "feature";
+                environmentType = branchNames.baseRef === branchNames.defaultBranch ? CONTENTFUL_ALIAS : 'feature';
+                if ((_d = (_c = github.context.payload) === null || _c === void 0 ? void 0 : _c.pull_request) === null || _d === void 0 ? void 0 : _d.merged) {
+                    environmentType = 'feature';
+                }
                 Logger.verbose("Environment type: " + environmentType);
                 environmentId = environmentType === CONTENTFUL_ALIAS
                     ? getNameFromPattern(MASTER_PATTERN)
@@ -98892,24 +98875,24 @@ var getEnvironment = function (space, branchNames) { return Object(tslib.__await
                 return [4 /*yield*/, space.createEnvironmentWithId(environmentId, {
                         name: environmentId,
                     })];
-            case 1: return [2 /*return*/, (_a.environment = _d.sent(),
+            case 1: return [2 /*return*/, (_a.environment = _e.sent(),
                     _a)];
             case 2:
                 // Else we need to check for an existing environment and flush it
                 Logger.log("Checking for existing versions of environment: \"" + environmentId + "\"");
-                _d.label = 3;
+                _e.label = 3;
             case 3:
-                _d.trys.push([3, 6, , 7]);
+                _e.trys.push([3, 6, , 7]);
                 return [4 /*yield*/, space.getEnvironment(environmentId)];
             case 4:
-                environment = _d.sent();
+                environment = _e.sent();
                 return [4 /*yield*/, (environment === null || environment === void 0 ? void 0 : environment.delete())];
             case 5:
-                _d.sent();
+                _e.sent();
                 Logger.success("Environment deleted: \"" + environmentId + "\"");
                 return [3 /*break*/, 7];
             case 6:
-                e_1 = _d.sent();
+                e_1 = _e.sent();
                 Logger.log("Environment not found: \"" + environmentId + "\"");
                 return [3 /*break*/, 7];
             case 7:
@@ -98922,7 +98905,7 @@ var getEnvironment = function (space, branchNames) { return Object(tslib.__await
                 return [4 /*yield*/, space.createEnvironmentWithId(environmentId, {
                         name: environmentId,
                     })];
-            case 8: return [2 /*return*/, (_b.environment = _d.sent(),
+            case 8: return [2 /*return*/, (_b.environment = _e.sent(),
                     _b)];
         }
     });

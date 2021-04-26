@@ -1,5 +1,5 @@
-import { Space } from "contentful-management/dist/typings/entities/space";
-import { BranchNames, EnvironmentProps, NameFromPatternArgs } from "./types";
+import { Space } from 'contentful-management/dist/typings/entities/space';
+import { BranchNames, EnvironmentProps, NameFromPatternArgs } from './types';
 export declare const Logger: {
     log(message: any): void;
     success(message: any): void;
