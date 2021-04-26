@@ -17,8 +17,10 @@ inputs:
     description: "The directory to look for migrations"
   space_id:
     description: "The id of the contentful space"
+    required: true
   management_api_key:
     description: "The management-api key for contentful"
+    required: true
 
 outputs:
   environment_url:
