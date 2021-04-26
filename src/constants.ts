@@ -18,8 +18,9 @@ const booleanOr = (str: string, fallback: boolean): boolean => {
 };
 
 const getInputOr = (coreInput: string, fallback: string): string => {
-  if ( coreInput ) {
-    return core.getInput(coreInput);
+  const input = core.getInput(coreInput);
+  if (input) {
+    return input;
   }
   return fallback;
 }

@@ -98672,8 +98672,9 @@ var booleanOr = function (str, fallback) {
     }
 };
 var getInputOr = function (coreInput, fallback) {
-    if (coreInput) {
-        return Object(core.getInput)(coreInput);
+    var input = Object(core.getInput)(coreInput);
+    if (input) {
+        return input;
     }
     return fallback;
 };
