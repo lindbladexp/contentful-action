@@ -132,7 +132,7 @@ export const getNameFromPattern = (
  * Get the branchNames based on the eventName
  */
 export const getBranchNames = (): BranchNames => {
-  const { eventName, payload } = github.context;
+  const { eventName, payload, ref } = github.context;
   const { default_branch: defaultBranch } = payload.repository;
 
   // Check the eventName
@@ -148,7 +148,7 @@ export const getBranchNames = (): BranchNames => {
     default:
       return {
         headRef: null,
-        baseRef: payload.ref.replace(/^refs\/heads\//, ""),
+        baseRef: ref.replace(/^refs\/heads\//, ""),
         defaultBranch,
       };
   }

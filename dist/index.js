@@ -98829,7 +98829,7 @@ var getNameFromPattern = function (pattern, _a) {
  * Get the branchNames based on the eventName
  */
 var getBranchNames = function () {
-    var _a = github.context, eventName = _a.eventName, payload = _a.payload;
+    var _a = github.context, eventName = _a.eventName, payload = _a.payload, ref = _a.ref;
     var defaultBranch = payload.repository.default_branch;
     // Check the eventName
     switch (eventName) {
@@ -98844,7 +98844,7 @@ var getBranchNames = function () {
         default:
             return {
                 headRef: null,
-                baseRef: payload.ref.replace(/^refs\/heads\//, ""),
+                baseRef: ref.replace(/^refs\/heads\//, ""),
                 defaultBranch: defaultBranch,
             };
     }
