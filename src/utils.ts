@@ -135,6 +135,8 @@ export const getBranchNames = (): BranchNames => {
   const { eventName, payload, ref } = github.context;
   const { default_branch: defaultBranch } = payload.repository;
 
+  Logger.verbose(`Getting branch names for ${eventName}`);
+
   // Check the eventName
   switch (eventName) {
     // If pullRequest we need to get the head and base
@@ -146,9 +148,10 @@ export const getBranchNames = (): BranchNames => {
       };
     // If not pullRequest we need work on the baseRef therefore head is null
     default:
+      Logger.verbose(`Return branch names for ${eventName} with baseRef ${payload.ref}`);
       return {
         headRef: null,
-        baseRef: ref.replace(/^refs\/heads\//, ""),
+        baseRef: payload.ref.replace(/^refs\/heads\//, ""),
         defaultBranch,
       };
   }
