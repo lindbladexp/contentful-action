@@ -135,7 +135,7 @@ export const getBranchNames = (): BranchNames => {
   const { eventName, payload, ref } = github.context;
   const { default_branch: defaultBranch } = payload.repository;
 
-  Logger.verbose(`Getting branch names for ${eventName}`);
+  Logger.verbose(`Getting branch names for "${eventName}"`);
 
   // Check the eventName
   switch (eventName) {
@@ -147,8 +147,7 @@ export const getBranchNames = (): BranchNames => {
         defaultBranch,
       };
     // If not pullRequest we need work on the baseRef therefore head is null
-    default:
-      Logger.verbose(`Return branch names for ${eventName} with baseRef ${payload.ref}`);
+    default:      
       return {
         headRef: null,
         baseRef: payload.ref.replace(/^refs\/heads\//, ""),
@@ -173,17 +172,22 @@ export const getEnvironment = async (
       ? branchNameToEnvironmentName(branchNames.headRef)
       : null,
   };
+
   // If the Pull Request is merged and the base is the repository default_name (master|main, ...)
   // Then create an environment name for the given master_pattern
   // Else create an environment name for the given feature_pattern
+  
   Logger.verbose(
     `MASTER_PATTERN: ${MASTER_PATTERN} | FEATURE_PATTERN: ${FEATURE_PATTERN}`
   );
+
   const environmentType =
     branchNames.baseRef === branchNames.defaultBranch &&
     github.context.payload.pull_request?.merged
       ? CONTENTFUL_ALIAS
       : "feature";
+
+  Logger.verbose(`Environment type: ${environmentType}`);
 
   const environmentId =
     environmentType === CONTENTFUL_ALIAS
@@ -191,6 +195,7 @@ export const getEnvironment = async (
       : getNameFromPattern(FEATURE_PATTERN, {
           branchName: branchNames.headRef,
         });
+
   Logger.verbose(`environmentId: "${environmentId}"`);
 
   // If environment matches ${CONTENTFUL_ALIAS} ("master")

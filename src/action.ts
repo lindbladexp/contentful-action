@@ -36,10 +36,13 @@ export const readdirAsync = promisify(readdir);
  */
 export const runAction = async (space): Promise<void> => {
   const branchNames = getBranchNames();
+  Logger.verbose(`Branch names for getting environment ${JSON.stringify(branchNames)}`);
   const { environmentId, environment, environmentType } = await getEnvironment(
     space,
     branchNames
   );
+
+  Logger.verbose(`environment id: ${environmentId} | environment: ${JSON.stringify(environment)} | environment type: ${environmentType}`);
 
   // Counter to limit retries
   let count = 0;

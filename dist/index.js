@@ -98831,7 +98831,7 @@ var getNameFromPattern = function (pattern, _a) {
 var getBranchNames = function () {
     var _a = github.context, eventName = _a.eventName, payload = _a.payload, ref = _a.ref;
     var defaultBranch = payload.repository.default_branch;
-    Logger.verbose("Getting branch names for " + eventName);
+    Logger.verbose("Getting branch names for \"" + eventName + "\"");
     // Check the eventName
     switch (eventName) {
         // If pullRequest we need to get the head and base
@@ -98843,7 +98843,6 @@ var getBranchNames = function () {
             };
         // If not pullRequest we need work on the baseRef therefore head is null
         default:
-            Logger.verbose("Return branch names for " + eventName + " with baseRef " + payload.ref);
             return {
                 headRef: null,
                 baseRef: payload.ref.replace(/^refs\/heads\//, ""),
@@ -98877,6 +98876,7 @@ var getEnvironment = function (space, branchNames) { return Object(tslib.__await
                 environmentType = branchNames.baseRef === branchNames.defaultBranch && ((_c = github.context.payload.pull_request) === null || _c === void 0 ? void 0 : _c.merged)
                     ? CONTENTFUL_ALIAS
                     : "feature";
+                Logger.verbose("Environment type: " + environmentType);
                 environmentId = environmentType === CONTENTFUL_ALIAS
                     ? getNameFromPattern(MASTER_PATTERN)
                     : getNameFromPattern(FEATURE_PATTERN, {
@@ -98951,9 +98951,11 @@ var runAction = function (space) { return Object(tslib.__awaiter)(void 0, void 0
         switch (_d.label) {
             case 0:
                 branchNames = getBranchNames();
+                Logger.verbose("Branch names for getting environment " + JSON.stringify(branchNames));
                 return [4 /*yield*/, getEnvironment(space, branchNames)];
             case 1:
                 _a = _d.sent(), environmentId = _a.environmentId, environment = _a.environment, environmentType = _a.environmentType;
+                Logger.verbose("environment id: " + environmentId + " | environment: " + JSON.stringify(environment) + " |\u00A0environment type: " + environmentType);
                 count = 0;
                 Logger.log("Waiting for environment processing...");
                 _d.label = 2;
