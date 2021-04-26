@@ -32,6 +32,8 @@ export const DEFAULT_VERSION_FIELD = "version";
 export const DEFAULT_DELETE_FEATURE = false;
 export const DEFAULT_SET_ALIAS = false;
 
+export const SPACE_ID = core.getInput('space_id', { required: true });
+export const MANAGEMENT_API_KEY = core.getInput('management_api_key', { required: true });
 export const VERSION_CONTENT_TYPE = getInputOr('version_content_type', DEFAULT_VERSION_CONTENT_TYPE);
 export const FEATURE_PATTERN = getInputOr('feature_pattern', DEFAULT_FEATURE_PATTERN);
 export const MASTER_PATTERN = getInputOr('master_pattern', DEFAULT_MASTER_PATTERN);

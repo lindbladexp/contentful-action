@@ -98659,7 +98659,8 @@ var to_semver_default = /*#__PURE__*/__webpack_require__.n(to_semver);
 // CONCATENATED MODULE: ./src/constants.ts
 var constants_a;
 
-var GITHUB_WORKSPACE = (constants_a = process.env, constants_a.GITHUB_WORKSPACE), LOG_LEVEL = constants_a.LOG_LEVEL, SPACE_ID = constants_a.INPUT_SPACE_ID, MANAGEMENT_API_KEY = constants_a.INPUT_MANAGEMENT_API_KEY, INPUT_MIGRATIONS_DIR = constants_a.INPUT_MIGRATIONS_DIR, INPUT_DELETE_FEATURE = constants_a.INPUT_DELETE_FEATURE, INPUT_SET_ALIAS = constants_a.INPUT_SET_ALIAS, INPUT_FEATURE_PATTERN = constants_a.INPUT_FEATURE_PATTERN, INPUT_MASTER_PATTERN = constants_a.INPUT_MASTER_PATTERN, INPUT_VERSION_CONTENT_TYPE = constants_a.INPUT_VERSION_CONTENT_TYPE, INPUT_VERSION_FIELD = constants_a.INPUT_VERSION_FIELD;
+
+var GITHUB_WORKSPACE = (constants_a = process.env, constants_a.GITHUB_WORKSPACE), LOG_LEVEL = constants_a.LOG_LEVEL;
 var booleanOr = function (str, fallback) {
     switch (str) {
         case "true":
@@ -98670,6 +98671,12 @@ var booleanOr = function (str, fallback) {
             return fallback;
     }
 };
+var getInputOr = function (coreInput, fallback) {
+    if (coreInput) {
+        return Object(core.getInput)(coreInput);
+    }
+    return fallback;
+};
 var DEFAULT_MIGRATIONS_DIR = "migrations";
 var DEFAULT_MASTER_PATTERN = "master-[YYYY]-[MM]-[DD]-[mm][ss]";
 var DEFAULT_FEATURE_PATTERN = "GH-[branch]";
@@ -98677,13 +98684,15 @@ var DEFAULT_VERSION_CONTENT_TYPE = "versionTracking";
 var DEFAULT_VERSION_FIELD = "version";
 var DEFAULT_DELETE_FEATURE = false;
 var DEFAULT_SET_ALIAS = false;
-var VERSION_CONTENT_TYPE = INPUT_VERSION_CONTENT_TYPE || DEFAULT_VERSION_CONTENT_TYPE;
-var FEATURE_PATTERN = INPUT_FEATURE_PATTERN || DEFAULT_FEATURE_PATTERN;
-var MASTER_PATTERN = INPUT_MASTER_PATTERN || DEFAULT_MASTER_PATTERN;
-var VERSION_FIELD = INPUT_VERSION_FIELD || DEFAULT_VERSION_FIELD;
-var DELETE_FEATURE = booleanOr(INPUT_DELETE_FEATURE, DEFAULT_DELETE_FEATURE);
-var SET_ALIAS = booleanOr(INPUT_SET_ALIAS, DEFAULT_SET_ALIAS);
-var MIGRATIONS_DIR = external_path_default().join(GITHUB_WORKSPACE, INPUT_MIGRATIONS_DIR || DEFAULT_MIGRATIONS_DIR);
+var SPACE_ID = Object(core.getInput)('space_id', { required: true });
+var MANAGEMENT_API_KEY = Object(core.getInput)('management_api_key', { required: true });
+var VERSION_CONTENT_TYPE = getInputOr('version_content_type', DEFAULT_VERSION_CONTENT_TYPE);
+var FEATURE_PATTERN = getInputOr('feature_pattern', DEFAULT_FEATURE_PATTERN);
+var MASTER_PATTERN = getInputOr('master_pattern', DEFAULT_MASTER_PATTERN);
+var VERSION_FIELD = getInputOr('version_field', DEFAULT_VERSION_FIELD);
+var DELETE_FEATURE = booleanOr(Object(core.getInput)('delete_feature'), DEFAULT_DELETE_FEATURE);
+var SET_ALIAS = booleanOr(Object(core.getInput)('set_alias'), DEFAULT_SET_ALIAS);
+var MIGRATIONS_DIR = external_path_default().join(GITHUB_WORKSPACE, getInputOr('migrations_dir', DEFAULT_MIGRATIONS_DIR));
 var CONTENTFUL_ALIAS = "master";
 var DELAY = 3000;
 var MAX_NUMBER_OF_TRIES = 10;
@@ -99109,25 +99118,23 @@ var runAction = function (space) { return Object(tslib.__awaiter)(void 0, void 0
     return Object(tslib.__generator)(this, function (_a) {
         switch (_a.label) {
             case 0:
+                _a.trys.push([0, 3, , 4]);
                 client = Object(contentful_management_node.createClient)({
                     accessToken: MANAGEMENT_API_KEY,
                 });
                 return [4 /*yield*/, client.getSpace(SPACE_ID)];
             case 1:
                 space = _a.sent();
-                _a.label = 2;
-            case 2:
-                _a.trys.push([2, 4, , 5]);
                 return [4 /*yield*/, runAction(space)];
-            case 3:
+            case 2:
                 _a.sent();
-                return [3 /*break*/, 5];
-            case 4:
+                return [3 /*break*/, 4];
+            case 3:
                 error_1 = _a.sent();
                 Logger.error(error_1);
                 Object(core.setFailed)(error_1.message);
-                return [3 /*break*/, 5];
-            case 5: return [2 /*return*/];
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); })();

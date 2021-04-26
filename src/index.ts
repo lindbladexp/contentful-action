@@ -2,15 +2,17 @@ import * as core from "@actions/core";
 import { createClient } from "contentful-management";
 import { runAction } from "./action";
 import { Logger } from "./utils";
+import {
+  MANAGEMENT_API_KEY,
+  SPACE_ID,
+} from './constants';
 
 (async () => {
   try {
-    const accessToken = core.getInput('management_api_key', { required: true });
-    const spaceId = core.getInput('space_id', { required: true });
     const client = createClient({
-      accessToken: accessToken,
+      accessToken: MANAGEMENT_API_KEY,
     });
-    const space = await client.getSpace(spaceId);
+    const space = await client.getSpace(SPACE_ID);
     await runAction(space);
   } catch (error) {
     Logger.error(error);
