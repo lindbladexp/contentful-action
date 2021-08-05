@@ -8,19 +8,19 @@ import { BranchNames, EnvironmentProps, EnvironmentType, EventNames, NameFromPat
 chalk.level = 3;
 
 export const Logger = {
-  log(message) {
+  log(message: string): void {
     console.log(chalk.white(message));
   },
-  success(message) {
+  success(message: string): void {
     console.log('✅', chalk.green(message));
   },
-  error(message) {
+  error(message: string): void {
     console.log('💩', chalk.red(message));
   },
-  warn(message) {
+  warn(message: string): void {
     console.log('⚠️', chalk.yellow(message));
   },
-  verbose(message) {
+  verbose(message: string): void {
     if (LOG_LEVEL === 'verbose') {
       console.log(chalk.white(message));
     }
@@ -31,7 +31,8 @@ export const Logger = {
  * Promise based delay
  * @param time
  */
-export const delay = (time = DELAY): Promise<void> => new Promise((resolve) => setTimeout(resolve, time));
+export const delay = (time = DELAY): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, time));
 
 /**
  * Convert fileNames to versions
@@ -39,7 +40,8 @@ export const delay = (time = DELAY): Promise<void> => new Promise((resolve) => s
  * filenameToVersion("1.js") // "1"
  * filenameToVersion("1.0.1.js") // "1.0.1"
  */
-export const filenameToVersion = (file: string): string => file.replace(/\.js$/, '').replace(/_/g, '.');
+export const filenameToVersion = (file: string): string =>
+  file.replace(/\.js$/, '').replace(/_/g, '.');
 
 /**
  * Convert versions to filenames
@@ -47,13 +49,15 @@ export const filenameToVersion = (file: string): string => file.replace(/\.js$/,
  * versionToFilename("1") // "1.js"
  * versionToFilename("1.0.1") // "1.0.1.js"
  */
-export const versionToFilename = (version: string): string => `${version.replace(/\\./g, '_')}.js`;
+export const versionToFilename = (version: string): string =>
+  `${version.replace(/\\./g, '_')}.js`;
 
 /**
  * Convert a branchName to a valid environmentName
  * @param branchName
  */
-export const branchNameToEnvironmentName = (branchName: string): string => branchName.replace(/[\/_.]/g, '-');
+export const branchNameToEnvironmentName = (branchName: string): string =>
+  branchName.replace(/[_.]/g, '-');
 
 export enum Matcher {
   YY = 'YY',
@@ -67,14 +71,19 @@ export enum Matcher {
 }
 
 export const matchers = {
-  [Matcher.ss]: (date: Date): string => `${date.getUTCSeconds()}`.padStart(2, '0'),
-  [Matcher.hh]: (date: Date): string => `${date.getUTCHours()}`.padStart(2, '0'),
-  [Matcher.mm]: (date: Date): string => `${date.getUTCMinutes()}`.padStart(2, '0'),
+  [Matcher.ss]: (date: Date): string =>
+    `${date.getUTCSeconds()}`.padStart(2, '0'),
+  [Matcher.hh]: (date: Date): string =>
+    `${date.getUTCHours()}`.padStart(2, '0'),
+  [Matcher.mm]: (date: Date): string =>
+    `${date.getUTCMinutes()}`.padStart(2, '0'),
   [Matcher.YYYY]: (date: Date): string => `${date.getUTCFullYear()}`,
   [Matcher.YY]: (date: Date): string => `${date.getUTCFullYear()}`.substr(2, 2),
-  [Matcher.MM]: (date: Date): string => `${date.getUTCMonth() + 1}`.padStart(2, '0'),
+  [Matcher.MM]: (date: Date): string =>
+    `${date.getUTCMonth() + 1}`.padStart(2, '0'),
   [Matcher.DD]: (date: Date): string => `${date.getDate()}`.padStart(2, '0'),
-  [Matcher.branch]: (branchName: string): string => branchNameToEnvironmentName(branchName),
+  [Matcher.branch]: (branchName: string): string =>
+    branchNameToEnvironmentName(branchName),
 };
 
 /**
@@ -82,45 +91,51 @@ export const matchers = {
  * @param pattern
  * @param branchName
  */
-export const getNameFromPattern = (pattern: string, { branchName }: NameFromPatternArgs = {}): string => {
+export const getNameFromPattern = (
+  pattern: string,
+  { branchName }: NameFromPatternArgs = {}
+): string => {
   const date = new Date();
-  return pattern.replace(/\[(YYYY|YY|MM|DD|hh|mm|ss|branch)]/g, (substring, match: Matcher) => {
-    switch (match) {
-      case Matcher.branch:
-        return matchers[Matcher.branch](branchName);
-      case Matcher.YYYY:
-      case Matcher.YY:
-      case Matcher.MM:
-      case Matcher.DD:
-      case Matcher.hh:
-      case Matcher.mm:
-      case Matcher.ss:
-        return matchers[match](date);
-      default:
-        return substring;
+  return pattern.replace(
+    /\[(YYYY|YY|MM|DD|hh|mm|ss|branch)]/g,
+    (substring, match: Matcher) => {
+      switch (match) {
+        case Matcher.branch:
+          return matchers[Matcher.branch](branchName);
+        case Matcher.YYYY:
+        case Matcher.YY:
+        case Matcher.MM:
+        case Matcher.DD:
+        case Matcher.hh:
+        case Matcher.mm:
+        case Matcher.ss:
+          return matchers[match](date);
+        default:
+          return substring;
+      }
     }
-  });
+  );
 };
 
 /**
  * Get the branchNames based on the eventName
  */
 export const getBranchNames = (): BranchNames => {
-  const { eventName, payload, ref } = github.context;
+  const { eventName, payload } = github.context;
   const { default_branch: defaultBranch } = payload.repository;
 
   Logger.verbose(`Getting branch names for "${eventName}"`);
 
-  // Check the eventName
+  // Check the name of the event
   switch (eventName) {
-    // If pullRequest we need to get the head and base
+    // If it is a Pull request we return the head and base ref
     case EventNames.pullRequest:
       return {
-        baseRef: payload.pull_request.base.ref,
         headRef: payload.pull_request.head.ref,
+        baseRef: payload.pull_request.base.ref,
         defaultBranch,
       };
-    // If not pullRequest we need work on the baseRef therefore head is null
+    // If is not a Pull request we need work on the baseRef therefore head is null
     default:
       return {
         headRef: null,
@@ -136,24 +151,32 @@ export const getBranchNames = (): BranchNames => {
  * @param space
  * @param branchNames
  */
-export const getEnvironment = async (space: Space, branchNames: BranchNames): Promise<EnvironmentProps> => {
+export const getEnvironment = async (
+  space: Space,
+  branchNames: BranchNames
+): Promise<EnvironmentProps> => {
   const environmentNames = {
     base: branchNameToEnvironmentName(branchNames.baseRef),
-    head: branchNames.headRef ? branchNameToEnvironmentName(branchNames.headRef) : null,
+    head: branchNames.headRef
+      ? branchNameToEnvironmentName(branchNames.headRef)
+      : null,
   };
 
   // If the Pull Request is merged and the base is the repository default_name (master|main, ...)
   // Then create an environment name for the given master_pattern
   // Else create an environment name for the given feature_pattern
 
-  Logger.verbose(`MASTER_PATTERN: ${MASTER_PATTERN} | FEATURE_PATTERN: ${FEATURE_PATTERN}`);
+  Logger.verbose(
+    `MASTER_PATTERN: ${MASTER_PATTERN} | FEATURE_PATTERN: ${FEATURE_PATTERN}`
+  );
 
   let environmentType: EnvironmentType =
-    branchNames.baseRef === branchNames.defaultBranch ? CONTENTFUL_ALIAS : 'feature';
+    branchNames.baseRef === branchNames.defaultBranch
+      ? CONTENTFUL_ALIAS
+      : 'feature';
 
-  // If pull request have been merged or there exists a headRef (comes only from a PR) then set
-  // enironment type to feature
-  if (github.context.payload?.pull_request?.merged || branchNames.headRef ) {
+  // If a headRef exists implying it is a Pull request then set type to feature
+  if (environmentNames.head !== null) {
     environmentType = 'feature';
   }
 
@@ -181,7 +204,9 @@ export const getEnvironment = async (space: Space, branchNames: BranchNames): Pr
     };
   }
   // Else we need to check for an existing environment and flush it
-  Logger.log(`Checking for existing versions of environment: "${environmentId}"`);
+  Logger.log(
+    `Checking for existing versions of environment: "${environmentId}"`
+  );
 
   try {
     const environment = await space.getEnvironment(environmentId);

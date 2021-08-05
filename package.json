@@ -1,12 +1,12 @@
 {
   "name": "contentful-migrations-action",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "JavaScript Action for Contentful migrations",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "scripts": {
-    "lint": "eslint src/index.ts",
+    "lint": "eslint src/** --ext .ts",
     "package": "ncc build src/index.ts -o dist",
-    "test": "eslint src/index.ts && jest"
+    "test": "jest"
   },
   "keywords": [
     "GitHub",
@@ -17,19 +17,21 @@
   "author": "GitHub",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.1.1",
-    "@actions/github": "^3.0.0",
-    "chalk": "^4.1.0",
-    "contentful-management": "^6.2.0-beta0",
-    "contentful-migration": "^0.17.1-beta0",
-    "to-semver": "^3.0.0",
-    "tslib": "^2.1.0"
+    "@actions/core": "^1.4.0",
+    "@actions/github": "^5.0.0",
+    "chalk": "^4.1.2",
+    "contentful-management": "^7.31.0",
+    "contentful-migration": "^4.2.5",
+    "to-semver": "^4.0.0",
+    "tslib": "^2.3.0"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.29.0",
+    "@typescript-eslint/parser": "^4.29.0",
     "@zeit/ncc": "^0.20.5",
-    "eslint": "^6.3.0",
-    "jest": "^24.9.0",
-    "prettier": "^2.2.1",
-    "typescript": "^4.1.5"
+    "eslint": "^7.32.0",
+    "jest": "^27.0.6",
+    "prettier": "^2.3.2",
+    "typescript": "^4.3.5"
   }
 }

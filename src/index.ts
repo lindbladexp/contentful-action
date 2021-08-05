@@ -7,7 +7,7 @@ import {
   SPACE_ID,
 } from './constants';
 
-(async () => {
+async function main(): Promise<void> {
   try {
     const client = createClient({
       accessToken: MANAGEMENT_API_KEY,
@@ -18,4 +18,6 @@ import {
     Logger.error(error);
     core.setFailed(error.message);
   }
-})();
+}
+
+main();

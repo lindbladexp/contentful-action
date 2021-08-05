@@ -1,22 +1,7 @@
 {
-	"compilerOptions": {
-		"allowJs": true,
-		"allowSyntheticDefaultImports": true,
-		"alwaysStrict": true,
-		"declaration": true,
-		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true,
-		"importHelpers": true,
-		"isolatedModules": true,
-		"jsx": "preserve",
-		"lib": ["dom", "esnext"],
-		"module": "esnext",
-		"moduleResolution": "node",
-		"noEmit": true,
-		"resolveJsonModule": true,
-		"skipLibCheck": true,
-		"sourceMap": true,
-		"strict": false,
-		"target": "es5",
-	}
+  "compilerOptions": {
+    "target": "es2015",
+    "moduleResolution": "node",
+	"allowSyntheticDefaultImports": true,
+  }
 }

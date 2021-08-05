@@ -1,10 +1,11 @@
-import * as core from "@actions/core";
-import * as github from "@actions/github";
-import { runMigration } from "contentful-migration/built/bin/cli";
-import { readdir } from "fs";
-import path from "path";
-import { promisify } from "util";
-import toSemver from 'to-semver'
+import * as core from '@actions/core';
+import * as github from '@actions/github';
+import { runMigration } from 'contentful-migration/built/bin/cli';
+import { readdir } from 'fs';
+import path from 'path';
+import { promisify } from 'util';
+import toSemver from 'to-semver';
+import { Space } from 'contentful-management/dist/typings/entities/space';
 
 import {
   CONTENTFUL_ALIAS,
@@ -17,7 +18,7 @@ import {
   VERSION_CONTENT_TYPE,
   VERSION_FIELD,
   FEATURE_PATTERN,
-} from "./constants";
+} from './constants';
 import {
   delay,
   filenameToVersion,
@@ -26,40 +27,47 @@ import {
   getNameFromPattern,
   Logger,
   versionToFilename,
-} from "./utils";
+} from './utils';
 
 export const readdirAsync = promisify(readdir);
 
 /**
- *
+ * Run the action
  * @param space
  */
-export const runAction = async (space): Promise<void> => {
+export const runAction = async (space: Space): Promise<void> => {
+  // Get base and if a pull request also the head ref
   const branchNames = getBranchNames();
-  Logger.verbose(`Branch names for getting environment ${JSON.stringify(branchNames)}`);
+
+  Logger.verbose(
+    `Branch names for getting environment ${JSON.stringify(branchNames)}`
+  );
+
   const { environmentId, environment, environmentType } = await getEnvironment(
     space,
     branchNames
   );
 
-  Logger.verbose(`environment id: ${environmentId} | environment: ${JSON.stringify(environment)} | environment type: ${environmentType}`);
+  Logger.verbose(`environment id: ${environmentId}`);
+  Logger.verbose(`environment: ${JSON.stringify(environment)}`);
+  Logger.verbose(`environment type: ${environmentType}`);
 
   // Counter to limit retries
   let count = 0;
-  Logger.log("Waiting for environment processing...");
-  while (count < MAX_NUMBER_OF_TRIES) {
-    const status = (await space.getEnvironment(environment.sys.id)).sys.status
-      .sys.id;
 
-    if (status === "ready") {
+  Logger.log('Waiting for environment processing...');
+
+  while (count < MAX_NUMBER_OF_TRIES) {
+    const env = await space.getEnvironment(environment.sys.id);
+    const status = env.sys.status.sys.id;
+
+    if (status === 'ready') {
       Logger.success(
         `Successfully processed new environment: "${environmentId}"`
       );
       break;
-    }
-
-    if (status === "failed") {
-      Logger.warn("Environment creation failed");
+    } else if (status === 'failed') {
+      Logger.warn('Environment creation failed');
       break;
     }
 
@@ -67,11 +75,11 @@ export const runAction = async (space): Promise<void> => {
     count++;
   }
 
-  Logger.verbose("Update API Keys to allow access to new environment");
+  Logger.verbose('Update API Keys to allow access to new environment');
   const newEnv = {
     sys: {
-      type: "Link",
-      linkType: "Environment",
+      type: 'Link',
+      linkType: 'Environment',
       id: environmentId,
     },
   };
@@ -85,23 +93,24 @@ export const runAction = async (space): Promise<void> => {
     })
   );
 
-  Logger.verbose("Set default locale to new environment");
+  Logger.verbose('Set default locale to new environment');
   const defaultLocale = (await environment.getLocales()).items.find(
     (locale) => locale.default
   ).code;
 
-  Logger.verbose("Read all the available migrations from the file system");
+  Logger.verbose('Read all the available migrations from the file system');
   // Check for available migrations
   // Migration scripts need to be sorted in order to run without conflicts
   const availableMigrations = toSemver(
-    (await readdirAsync(MIGRATIONS_DIR)).map((file) => filenameToVersion(file)), {clean: false}
+    (await readdirAsync(MIGRATIONS_DIR)).map((file) => filenameToVersion(file)),
+    { clean: false }
   ).reverse();
 
   Logger.verbose(
     `versionOrder: ${JSON.stringify(availableMigrations, null, 4)}`
   );
 
-  Logger.verbose("Find current version of the contentful space");
+  Logger.verbose('Find current version of the contentful space');
   const { items: versions } = await environment.getEntries({
     content_type: VERSION_CONTENT_TYPE,
   });
@@ -110,11 +119,9 @@ export const runAction = async (space): Promise<void> => {
   // Then throw an Error and abort
   if (versions.length === 0) {
     throw new Error(
-      `There should be exactly one entry of type "${VERSION_CONTENT_TYPE}"`
+      `Error occured, no entry of type "${VERSION_CONTENT_TYPE}" was found`
     );
-  }
-
-  if (versions.length > 1) {
+  } else if (versions.length > 1) {
     throw new Error(
       `There should only be one entry of type "${VERSION_CONTENT_TYPE}"`
     );
@@ -124,7 +131,7 @@ export const runAction = async (space): Promise<void> => {
   const currentVersionString =
     storedVersionEntry.fields[VERSION_FIELD][defaultLocale];
 
-  Logger.verbose("Evaluate which migrations to run");
+  Logger.verbose('Evaluate which migrations to run');
   const currentMigrationIndex = availableMigrations.indexOf(
     currentVersionString
   );
@@ -145,7 +152,7 @@ export const runAction = async (space): Promise<void> => {
     yes: true,
   };
 
-  Logger.verbose("Run migrations and update version entry");
+  Logger.verbose('Run migrations and update version entry');
   // Allow mutations
   let migrationToRun;
   let mutableStoredVersionEntry = storedVersionEntry;
@@ -188,8 +195,8 @@ export const runAction = async (space): Promise<void> => {
       .then((alias) => Logger.success(`alias ${alias.sys.id} updated.`))
       .catch(Logger.error);
   } else {
-    Logger.verbose("Running on feature branch");
-    Logger.verbose("No alias changes required");
+    Logger.verbose('Running on feature branch');
+    Logger.verbose('No alias changes required');
   }
 
   // If the sandbox environment should be deleted
@@ -210,15 +217,15 @@ export const runAction = async (space): Promise<void> => {
       await environment?.delete();
       Logger.success(`Deleted the environment: ${environmentIdToDelete}`);
     } catch (error) {
-      Logger.error("Cannot delete the environment");
+      Logger.error('Cannot delete the environment');
     }
   }
 
   // Set the outputs for further actions
   core.setOutput(
-    "environment_url",
+    'environment_url',
     `https://app.contentful.com/spaces/${space.sys.id}/environments/${environmentId}`
   );
-  core.setOutput("environment_name", environmentId);
-  Logger.success("🚀 All done 🚀");
+  core.setOutput('environment_name', environmentId);
+  Logger.success('🚀 All done 🚀');
 };
