@@ -2134,6 +2134,20 @@ exports.default = DispatchProxy;
 
 /***/ }),
 
+/***/ 336:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(5100));
+//# sourceMappingURL=Observable.js.map
+
+/***/ }),
+
 /***/ 338:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -5041,7 +5055,7 @@ const tag_1 = __webpack_require__(7736);
 const content_type_1 = __webpack_require__(6113);
 const entry_1 = __webpack_require__(5255);
 const tag_2 = __webpack_require__(9313);
-const display_field_1 = __importDefault(__webpack_require__(6675));
+const display_field_1 = __importDefault(__webpack_require__(9758));
 const index_1 = __importDefault(__webpack_require__(5581));
 const type_change_1 = __importDefault(__webpack_require__(7644));
 const tags_on_entry_1 = __importDefault(__webpack_require__(7829));
@@ -10465,6 +10479,14 @@ var ExhaustMapSubscriber = (function (_super) {
 
 /***/ }),
 
+/***/ 1029:
+/***/ (function() {
+
+eval("require")("rxjs-compat/add/observable/from");
+
+
+/***/ }),
+
 /***/ 1034:
 /***/ (function(module) {
 
@@ -14331,127 +14353,9 @@ exports.default = createRun({ shouldThrow: false });
 /***/ }),
 
 /***/ 1321:
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/***/ (function() {
 
-"use strict";
-
-module.exports = function(
-    Promise, PromiseArray, tryConvertToPromise, apiRejection) {
-var util = __webpack_require__(7248);
-var isObject = util.isObject;
-var es5 = __webpack_require__(2883);
-var Es6Map;
-if (typeof Map === "function") Es6Map = Map;
-
-var mapToEntries = (function() {
-    var index = 0;
-    var size = 0;
-
-    function extractEntry(value, key) {
-        this[index] = value;
-        this[index + size] = key;
-        index++;
-    }
-
-    return function mapToEntries(map) {
-        size = map.size;
-        index = 0;
-        var ret = new Array(map.size * 2);
-        map.forEach(extractEntry, ret);
-        return ret;
-    };
-})();
-
-var entriesToMap = function(entries) {
-    var ret = new Es6Map();
-    var length = entries.length / 2 | 0;
-    for (var i = 0; i < length; ++i) {
-        var key = entries[length + i];
-        var value = entries[i];
-        ret.set(key, value);
-    }
-    return ret;
-};
-
-function PropertiesPromiseArray(obj) {
-    var isMap = false;
-    var entries;
-    if (Es6Map !== undefined && obj instanceof Es6Map) {
-        entries = mapToEntries(obj);
-        isMap = true;
-    } else {
-        var keys = es5.keys(obj);
-        var len = keys.length;
-        entries = new Array(len * 2);
-        for (var i = 0; i < len; ++i) {
-            var key = keys[i];
-            entries[i] = obj[key];
-            entries[i + len] = key;
-        }
-    }
-    this.constructor$(entries);
-    this._isMap = isMap;
-    this._init$(undefined, isMap ? -6 : -3);
-}
-util.inherits(PropertiesPromiseArray, PromiseArray);
-
-PropertiesPromiseArray.prototype._init = function () {};
-
-PropertiesPromiseArray.prototype._promiseFulfilled = function (value, index) {
-    this._values[index] = value;
-    var totalResolved = ++this._totalResolved;
-    if (totalResolved >= this._length) {
-        var val;
-        if (this._isMap) {
-            val = entriesToMap(this._values);
-        } else {
-            val = {};
-            var keyOffset = this.length();
-            for (var i = 0, len = this.length(); i < len; ++i) {
-                val[this._values[i + keyOffset]] = this._values[i];
-            }
-        }
-        this._resolve(val);
-        return true;
-    }
-    return false;
-};
-
-PropertiesPromiseArray.prototype.shouldCopyValues = function () {
-    return false;
-};
-
-PropertiesPromiseArray.prototype.getActualLength = function (len) {
-    return len >> 1;
-};
-
-function props(promises) {
-    var ret;
-    var castValue = tryConvertToPromise(promises);
-
-    if (!isObject(castValue)) {
-        return apiRejection("cannot await properties of a non-object\u000a\u000a    See http://goo.gl/MqrFmX\u000a");
-    } else if (castValue instanceof Promise) {
-        ret = castValue._then(
-            Promise.props, undefined, undefined, undefined, undefined);
-    } else {
-        ret = new PropertiesPromiseArray(castValue).promise();
-    }
-
-    if (castValue instanceof Promise) {
-        ret._propagateFrom(castValue, 2);
-    }
-    return ret;
-}
-
-Promise.prototype.props = function () {
-    return props(this);
-};
-
-Promise.props = function (promises) {
-    return props(promises);
-};
-};
+eval("require")("rxjs-compat/add/observable/of");
 
 
 /***/ }),
@@ -17068,6 +16972,17 @@ function mapCacheClear() {
 
 module.exports = mapCacheClear;
 
+
+/***/ }),
+
+/***/ 1816:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+__webpack_require__(1029);
+//# sourceMappingURL=from.js.map
 
 /***/ }),
 
@@ -19726,7 +19641,7 @@ module.exports = convert;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var canReportError_1 = __webpack_require__(4719);
-var toSubscriber_1 = __webpack_require__(2882);
+var toSubscriber_1 = __webpack_require__(7940);
 var observable_1 = __webpack_require__(3522);
 var pipe_1 = __webpack_require__(3698);
 var config_1 = __webpack_require__(3053);
@@ -25597,6 +25512,132 @@ module.exports = Separator;
 
 /***/ }),
 
+/***/ 2831:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+module.exports = function(
+    Promise, PromiseArray, tryConvertToPromise, apiRejection) {
+var util = __webpack_require__(7248);
+var isObject = util.isObject;
+var es5 = __webpack_require__(2883);
+var Es6Map;
+if (typeof Map === "function") Es6Map = Map;
+
+var mapToEntries = (function() {
+    var index = 0;
+    var size = 0;
+
+    function extractEntry(value, key) {
+        this[index] = value;
+        this[index + size] = key;
+        index++;
+    }
+
+    return function mapToEntries(map) {
+        size = map.size;
+        index = 0;
+        var ret = new Array(map.size * 2);
+        map.forEach(extractEntry, ret);
+        return ret;
+    };
+})();
+
+var entriesToMap = function(entries) {
+    var ret = new Es6Map();
+    var length = entries.length / 2 | 0;
+    for (var i = 0; i < length; ++i) {
+        var key = entries[length + i];
+        var value = entries[i];
+        ret.set(key, value);
+    }
+    return ret;
+};
+
+function PropertiesPromiseArray(obj) {
+    var isMap = false;
+    var entries;
+    if (Es6Map !== undefined && obj instanceof Es6Map) {
+        entries = mapToEntries(obj);
+        isMap = true;
+    } else {
+        var keys = es5.keys(obj);
+        var len = keys.length;
+        entries = new Array(len * 2);
+        for (var i = 0; i < len; ++i) {
+            var key = keys[i];
+            entries[i] = obj[key];
+            entries[i + len] = key;
+        }
+    }
+    this.constructor$(entries);
+    this._isMap = isMap;
+    this._init$(undefined, isMap ? -6 : -3);
+}
+util.inherits(PropertiesPromiseArray, PromiseArray);
+
+PropertiesPromiseArray.prototype._init = function () {};
+
+PropertiesPromiseArray.prototype._promiseFulfilled = function (value, index) {
+    this._values[index] = value;
+    var totalResolved = ++this._totalResolved;
+    if (totalResolved >= this._length) {
+        var val;
+        if (this._isMap) {
+            val = entriesToMap(this._values);
+        } else {
+            val = {};
+            var keyOffset = this.length();
+            for (var i = 0, len = this.length(); i < len; ++i) {
+                val[this._values[i + keyOffset]] = this._values[i];
+            }
+        }
+        this._resolve(val);
+        return true;
+    }
+    return false;
+};
+
+PropertiesPromiseArray.prototype.shouldCopyValues = function () {
+    return false;
+};
+
+PropertiesPromiseArray.prototype.getActualLength = function (len) {
+    return len >> 1;
+};
+
+function props(promises) {
+    var ret;
+    var castValue = tryConvertToPromise(promises);
+
+    if (!isObject(castValue)) {
+        return apiRejection("cannot await properties of a non-object\u000a\u000a    See http://goo.gl/MqrFmX\u000a");
+    } else if (castValue instanceof Promise) {
+        ret = castValue._then(
+            Promise.props, undefined, undefined, undefined, undefined);
+    } else {
+        ret = new PropertiesPromiseArray(castValue).promise();
+    }
+
+    if (castValue instanceof Promise) {
+        ret._propagateFrom(castValue, 2);
+    }
+    return ret;
+}
+
+Promise.prototype.props = function () {
+    return props(this);
+};
+
+Promise.props = function (promises) {
+    return props(promises);
+};
+};
+
+
+/***/ }),
+
 /***/ 2840:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -25892,25 +25933,8 @@ function dispatchBufferClose(arg) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var Subscriber_1 = __webpack_require__(9114);
-var rxSubscriber_1 = __webpack_require__(2754);
-var Observer_1 = __webpack_require__(3016);
-function toSubscriber(nextOrObserver, error, complete) {
-    if (nextOrObserver) {
-        if (nextOrObserver instanceof Subscriber_1.Subscriber) {
-            return nextOrObserver;
-        }
-        if (nextOrObserver[rxSubscriber_1.rxSubscriber]) {
-            return nextOrObserver[rxSubscriber_1.rxSubscriber]();
-        }
-    }
-    if (!nextOrObserver && !error && !complete) {
-        return new Subscriber_1.Subscriber(Observer_1.empty);
-    }
-    return new Subscriber_1.Subscriber(nextOrObserver, error, complete);
-}
-exports.toSubscriber = toSubscriber;
-//# sourceMappingURL=toSubscriber.js.map
+__webpack_require__(1321);
+//# sourceMappingURL=of.js.map
 
 /***/ }),
 
@@ -50397,6 +50421,14 @@ function isKey(value, object) {
 }
 
 module.exports = isKey;
+
+
+/***/ }),
+
+/***/ 5100:
+/***/ (function() {
+
+eval("require")("rxjs-compat/Observable");
 
 
 /***/ }),
@@ -75249,7 +75281,7 @@ __webpack_require__(3982)(Promise, apiRejection, INTERNAL, tryConvertToPromise, 
 __webpack_require__(220)(Promise, PromiseArray, apiRejection, tryConvertToPromise, INTERNAL, debug);
 __webpack_require__(8694)(Promise);
 __webpack_require__(8948)(Promise, INTERNAL);
-__webpack_require__(1321)(Promise, PromiseArray, tryConvertToPromise, apiRejection);
+__webpack_require__(2831)(Promise, PromiseArray, tryConvertToPromise, apiRejection);
 __webpack_require__(5832)(Promise, INTERNAL, tryConvertToPromise, apiRejection);
 __webpack_require__(9814)(Promise, PromiseArray, apiRejection, tryConvertToPromise, INTERNAL, debug);
 __webpack_require__(7149)(Promise, PromiseArray, debug);
@@ -96428,6 +96460,9 @@ module.exports = require("crypto");
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 
+// EXTERNAL MODULE: ./node_modules/any-observable/register/rxjs.js
+var rxjs = __webpack_require__(6675);
+
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __webpack_require__(6470);
 
@@ -96437,8 +96472,8 @@ var contentful_management_node = __webpack_require__(6311);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __webpack_require__(1469);
 
-// EXTERNAL MODULE: ./node_modules/contentful-migration/built/bin/cli.js
-var cli = __webpack_require__(1315);
+// EXTERNAL MODULE: ./node_modules/contentful-migration/built/index.js
+var built = __webpack_require__(9139);
 
 // EXTERNAL MODULE: external "fs"
 var external_fs_ = __webpack_require__(5747);
@@ -96837,7 +96872,7 @@ const runAction = (space) => action_awaiter(void 0, void 0, void 0, function* ()
     while ((migrationToRun = migrationsToRun.shift())) {
         const filePath = external_path_default().join(MIGRATIONS_DIR, versionToFilename(migrationToRun));
         Logger.verbose(`Running ${filePath}`);
-        yield Object(cli.runMigration)(Object.assign(migrationOptions, {
+        yield Object(built.runMigration)(Object.assign(migrationOptions, {
             filePath,
         }));
         Logger.success(`Migration script ${migrationToRun}.js succeeded`);
@@ -96902,6 +96937,7 @@ var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argu
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
 
 
 
@@ -99562,50 +99598,14 @@ module.exports = mapToArray;
 /***/ }),
 
 /***/ 6675:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
+/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
 "use strict";
 
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const __1 = __webpack_require__(666);
-const errors_1 = __importDefault(__webpack_require__(4586));
-const isDisplayFieldAndHasBeenDeleted = function (field, displayField) {
-    return field.id === displayField && field.deleted;
-};
-const fieldIsDisplayField = function (field, displayField) {
-    return field.id === displayField;
-};
-class DisplayFieldValidator {
-    constructor() {
-        this.hooks = [__1.ApiHook.SaveContentType];
-    }
-    validate(contentType) {
-        const errors = [];
-        const displayField = contentType.displayField;
-        if (!displayField) {
-            return errors;
-        }
-        const fields = contentType.fields.toRaw();
-        if (!fields.some((field) => fieldIsDisplayField(field, displayField))) {
-            errors.push({
-                type: 'InvalidAction',
-                message: errors_1.default.contentType.NON_EXISTENT_DISPLAY_FIELD(displayField, contentType.id)
-            });
-        }
-        if (fields.some((field) => isDisplayFieldAndHasBeenDeleted(field, displayField))) {
-            errors.push({
-                type: 'InvalidAction',
-                message: errors_1.default.contentType.DELETE_DISPLAY_FIELD(displayField, contentType.id)
-            });
-        }
-        return errors;
-    }
-}
-exports.default = DisplayFieldValidator;
-//# sourceMappingURL=display-field.js.map
+__webpack_require__(7510)('rxjs/Observable', {Observable: __webpack_require__(336).Observable});
+__webpack_require__(2882); // eslint-disable-line import/no-unassigned-import
+__webpack_require__(1816); // eslint-disable-line import/no-unassigned-import
+
 
 /***/ }),
 
@@ -107537,6 +107537,34 @@ exports.NEVER = never_2.NEVER;
 var config_1 = __webpack_require__(3053);
 exports.config = config_1.config;
 //# sourceMappingURL=index.js.map
+
+/***/ }),
+
+/***/ 7940:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Subscriber_1 = __webpack_require__(9114);
+var rxSubscriber_1 = __webpack_require__(2754);
+var Observer_1 = __webpack_require__(3016);
+function toSubscriber(nextOrObserver, error, complete) {
+    if (nextOrObserver) {
+        if (nextOrObserver instanceof Subscriber_1.Subscriber) {
+            return nextOrObserver;
+        }
+        if (nextOrObserver[rxSubscriber_1.rxSubscriber]) {
+            return nextOrObserver[rxSubscriber_1.rxSubscriber]();
+        }
+    }
+    if (!nextOrObserver && !error && !complete) {
+        return new Subscriber_1.Subscriber(Observer_1.empty);
+    }
+    return new Subscriber_1.Subscriber(nextOrObserver, error, complete);
+}
+exports.toSubscriber = toSubscriber;
+//# sourceMappingURL=toSubscriber.js.map
 
 /***/ }),
 
@@ -118423,6 +118451,18 @@ exports.default = SidebarResetToDefaultIntent;
 
 /***/ }),
 
+/***/ 9139:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const cli_1 = __webpack_require__(1315);
+module.exports = { runMigration: cli_1.runMigration };
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+
 /***/ 9143:
 /***/ (function(module) {
 
@@ -122400,6 +122440,54 @@ function arrayIncludes(array, value) {
 
 module.exports = arrayIncludes;
 
+
+/***/ }),
+
+/***/ 9758:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const __1 = __webpack_require__(666);
+const errors_1 = __importDefault(__webpack_require__(4586));
+const isDisplayFieldAndHasBeenDeleted = function (field, displayField) {
+    return field.id === displayField && field.deleted;
+};
+const fieldIsDisplayField = function (field, displayField) {
+    return field.id === displayField;
+};
+class DisplayFieldValidator {
+    constructor() {
+        this.hooks = [__1.ApiHook.SaveContentType];
+    }
+    validate(contentType) {
+        const errors = [];
+        const displayField = contentType.displayField;
+        if (!displayField) {
+            return errors;
+        }
+        const fields = contentType.fields.toRaw();
+        if (!fields.some((field) => fieldIsDisplayField(field, displayField))) {
+            errors.push({
+                type: 'InvalidAction',
+                message: errors_1.default.contentType.NON_EXISTENT_DISPLAY_FIELD(displayField, contentType.id)
+            });
+        }
+        if (fields.some((field) => isDisplayFieldAndHasBeenDeleted(field, displayField))) {
+            errors.push({
+                type: 'InvalidAction',
+                message: errors_1.default.contentType.DELETE_DISPLAY_FIELD(displayField, contentType.id)
+            });
+        }
+        return errors;
+    }
+}
+exports.default = DisplayFieldValidator;
+//# sourceMappingURL=display-field.js.map
 
 /***/ }),
 

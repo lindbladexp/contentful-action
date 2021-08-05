@@ -1,11 +1,10 @@
-import * as core from "@actions/core";
-import { createClient } from "contentful-management";
-import { runAction } from "./action";
-import { Logger } from "./utils";
-import {
-  MANAGEMENT_API_KEY,
-  SPACE_ID,
-} from './constants';
+import 'any-observable/register/rxjs';
+
+import * as core from '@actions/core';
+import { createClient } from 'contentful-management';
+import { runAction } from './action';
+import { Logger } from './utils';
+import { MANAGEMENT_API_KEY, SPACE_ID } from './constants';
 
 async function main(): Promise<void> {
   try {
