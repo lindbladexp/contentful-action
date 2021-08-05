@@ -96561,21 +96561,23 @@ const getBranchNames = () => {
  * @param branchNames
  */
 const getEnvironment = (space, branchNames) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const environmentNames = {
         base: branchNameToEnvironmentName(branchNames.baseRef),
         head: branchNames.headRef
             ? branchNameToEnvironmentName(branchNames.headRef)
             : null,
     };
-    // If the Pull Request is merged and the base is the repository default_name (master|main, ...)
-    // Then create an environment name for the given master_pattern
-    // Else create an environment name for the given feature_pattern
     Logger.verbose(`MASTER_PATTERN: ${MASTER_PATTERN} | FEATURE_PATTERN: ${FEATURE_PATTERN}`);
+    // If the baseRef is the same as the default branch then we presume we are going to create a master environment
+    // for the given master_pattern
     let environmentType = branchNames.baseRef === branchNames.defaultBranch
         ? CONTENTFUL_ALIAS
         : 'feature';
-    // If a headRef exists implying it is a Pull request then set type to feature
-    if (environmentNames.head !== null) {
+    // If a headRef exists implying it is a Pull request then set type to feature to
+    // create a environment name for the given feature_pattern
+    if (environmentNames.head !== null &&
+        !((_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.merged)) {
         environmentType = 'feature';
     }
     Logger.verbose(`Environment type: ${environmentType}`);

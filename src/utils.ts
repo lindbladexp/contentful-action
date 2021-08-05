@@ -1,8 +1,20 @@
 import * as github from '@actions/github';
 import chalk from 'chalk';
 import { Space } from 'contentful-management/dist/typings/entities/space';
-import { CONTENTFUL_ALIAS, DELAY, FEATURE_PATTERN, LOG_LEVEL, MASTER_PATTERN } from './constants';
-import { BranchNames, EnvironmentProps, EnvironmentType, EventNames, NameFromPatternArgs } from './types';
+import {
+  CONTENTFUL_ALIAS,
+  DELAY,
+  FEATURE_PATTERN,
+  LOG_LEVEL,
+  MASTER_PATTERN,
+} from './constants';
+import {
+  BranchNames,
+  EnvironmentProps,
+  EnvironmentType,
+  EventNames,
+  NameFromPatternArgs,
+} from './types';
 
 // Force colors on github
 chalk.level = 3;
@@ -162,21 +174,23 @@ export const getEnvironment = async (
       : null,
   };
 
-  // If the Pull Request is merged and the base is the repository default_name (master|main, ...)
-  // Then create an environment name for the given master_pattern
-  // Else create an environment name for the given feature_pattern
-
   Logger.verbose(
     `MASTER_PATTERN: ${MASTER_PATTERN} | FEATURE_PATTERN: ${FEATURE_PATTERN}`
   );
 
+  // If the baseRef is the same as the default branch then we presume we are going to create a master environment
+  // for the given master_pattern
   let environmentType: EnvironmentType =
     branchNames.baseRef === branchNames.defaultBranch
       ? CONTENTFUL_ALIAS
       : 'feature';
 
-  // If a headRef exists implying it is a Pull request then set type to feature
-  if (environmentNames.head !== null) {
+  // If a headRef exists implying it is a Pull request then set type to feature to
+  // create a environment name for the given feature_pattern
+  if (
+    environmentNames.head !== null &&
+    !github.context.payload.pull_request?.merged
+  ) {
     environmentType = 'feature';
   }
 
