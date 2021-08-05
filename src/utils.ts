@@ -69,7 +69,7 @@ export const versionToFilename = (version: string): string =>
  * @param branchName
  */
 export const branchNameToEnvironmentName = (branchName: string): string =>
-  branchName.replace(/[_.]/g, '-');
+  branchName.replace(/[_./]/g, '-');
 
 export enum Matcher {
   YY = 'YY',
@@ -230,14 +230,25 @@ export const getEnvironment = async (
     Logger.log(`Environment not found: "${environmentId}"`);
   }
 
-  Logger.log(`Creating environment ${environmentId}`);
+  try {
+    Logger.log(`Creating environment ${environmentId}`);
 
-  return {
-    environmentType,
-    environmentNames,
-    environmentId,
-    environment: await space.createEnvironmentWithId(environmentId, {
+    const newEnv = await space.createEnvironmentWithId(environmentId, {
       name: environmentId,
-    }),
-  };
+    });
+
+    Logger.success(`New environment created: "${environmentId}"`);
+
+    return {
+      environmentType,
+      environmentNames,
+      environmentId,
+      environment: newEnv,
+    };
+  } catch (e) {
+    Logger.error(
+      `Failed creating new environment with environmentId: "${environmentId}"`
+    );
+    throw new Error(e);
+  }
 };
