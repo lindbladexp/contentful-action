@@ -1,6 +1,6 @@
 {
   "name": "contentful-migrations-action",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "JavaScript Action for Contentful migrations",
   "main": "dist/index.js",
   "type": "module",
@@ -24,6 +24,7 @@
     "chalk": "^4.1.2",
     "contentful-management": "^7.31.0",
     "contentful-migration": "^4.2.5",
+    "rxjs-compat": "^6.6.7",
     "to-semver": "^4.0.0",
     "tslib": "^2.3.0"
   },
