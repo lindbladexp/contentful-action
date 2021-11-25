@@ -149,6 +149,7 @@ export const runAction = async (space: Space): Promise<void> => {
     spaceId: SPACE_ID,
     environmentId,
     accessToken: MANAGEMENT_API_KEY,
+    header: 'x-contentful-enable-alpha-feature: assembly-types',
     yes: true,
   };
 
