@@ -23,6 +23,7 @@
     "chalk": "^4.1.2",
     "contentful-management": "^9.0.0",
     "contentful-migration": "4.9.0",
+    "rxjs": "^7.5.5",
     "rxjs-compat": "^6.6.7",
     "to-semver": "^4.0.0",
     "tslib": "^2.3.0"
