@@ -21,8 +21,8 @@
     "@actions/github": "^5.0.0",
     "any-observable": "^0.5.1",
     "chalk": "^4.1.2",
-    "contentful-management": "^9.0.0",
-    "contentful-migration": "4.9.0",
+    "contentful-management": "^10.6.2",
+    "contentful-migration": "^4.9.1",
     "rxjs": "^7.5.5",
     "rxjs-compat": "^6.6.7",
     "to-semver": "^4.0.0",
@@ -35,6 +35,6 @@
     "eslint": "^7.32.0",
     "jest": "^27.0.6",
     "prettier": "^2.3.2",
-    "typescript": "^4.3.5"
+    "typescript": "^4.7.3"
   }
 }
