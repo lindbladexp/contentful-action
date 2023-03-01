@@ -1618,7 +1618,7 @@ concat-map@0.0.1:
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
   integrity sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==
 
-contentful-management@^10.6.2:
+contentful-management@10.6.2:
   version "10.6.2"
   resolved "https://registry.yarnpkg.com/contentful-management/-/contentful-management-10.6.2.tgz#1e1cb4a86ab6fd84d06c619759dc628ccab86abb"
   integrity sha512-Cyn3f1CIm0DR/9VAm0PQJzTbhknlZlz+G1KYo3chgG/7ug3VyCJQ3Scdu14mzjJNhxO7epquIZUqaewklXUROg==
@@ -1641,7 +1641,7 @@ contentful-management@^7.51.5:
     lodash.isplainobject "^4.0.6"
     type-fest "^2.5.3"
 
-contentful-migration@^4.9.1:
+contentful-migration@4.9.1:
   version "4.9.1"
   resolved "https://registry.yarnpkg.com/contentful-migration/-/contentful-migration-4.9.1.tgz#ae3d86332ab14e9e72d9e69bb978ef682078ee5e"
   integrity sha512-qEPeYGnsxc65eqPoIFFhdmCkbx9o6nv797Ar+QkwCnIVyXOKYMlD+i6s21hAGyzrVePxl3UNbvAxJwdmKYiyDw==
