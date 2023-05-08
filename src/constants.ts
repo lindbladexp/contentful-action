@@ -44,5 +44,5 @@ export const SET_ALIAS = booleanOr(core.getInput('set_alias'), DEFAULT_SET_ALIAS
 export const MIGRATIONS_DIR = path.join(GITHUB_WORKSPACE, getInputOr('migrations_dir', DEFAULT_MIGRATIONS_DIR));
 
 export const CONTENTFUL_ALIAS = "master";
-export const DELAY = 12000;
+export const DELAY = 32_000;
 export const MAX_NUMBER_OF_TRIES = 10;
