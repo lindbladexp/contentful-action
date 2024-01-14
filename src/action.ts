@@ -206,7 +206,7 @@ export const runAction = async (space: Space): Promise<void> => {
   if (
     DELETE_FEATURE &&
     branchNames.baseRef === branchNames.defaultBranch &&
-    github.context.payload.pull_request?.merged
+    (github.context.payload.pull_request?.merged || github.context.payload.pull_request?.state === 'closed') 
   ) {
     try {
       const environmentIdToDelete = getNameFromPattern(FEATURE_PATTERN, {
