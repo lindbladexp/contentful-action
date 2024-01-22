@@ -5,6 +5,7 @@ import {
   CONTENTFUL_ALIAS,
   DELAY,
   FEATURE_PATTERN,
+  FLUSH_PREVIEW_ENV,
   LOG_LEVEL,
   MASTER_PATTERN,
 } from './constants';
@@ -251,8 +252,14 @@ export const getEnvironment = async (
   );
 
   try {
-    const environment = await space.getEnvironment(environmentId);
-    await environment?.delete();
+    if (FLUSH_PREVIEW_ENV) {
+      const environment = await space.getEnvironment(environmentId);
+      await environment?.delete();
+    } else {
+      Logger.log(
+        `FLUSH_PREVIEW_ENV is set to ${FLUSH_PREVIEW_ENV}. Skipping flush.`
+      );
+    }
     Logger.success(`Environment deleted: "${environmentId}"`);
   } catch (e) {
     Logger.log(`Environment not found: "${environmentId}"`);
