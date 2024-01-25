@@ -164,7 +164,7 @@ export const getBranchNames = (): BranchNames => {
   const { default_branch: defaultBranch } = payload.repository;
 
   // Check the eventName
-  Logger.success('getBranchNames function')
+  Logger.success('getBranchNames function test')
   Logger.info(`eventName: ${eventName}`)
   Logger.info(`payload: ${stringifyObject(payload)}`)
   switch (eventName) {
