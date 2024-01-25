@@ -21,6 +21,9 @@ inputs:
   management_api_key:
     description: "The management-api key for contentful"
     required: true
+  flush_preview_env:
+    description: "Set to false if you don't want to recreate the preview environment on every push, defaults to true"
+    required: false
 
 outputs:
   environment_url:
