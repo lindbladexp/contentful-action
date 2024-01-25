@@ -225,6 +225,7 @@ export const getEnvironment = async (
   Logger.info(`isEnvTypeAlias: ${isEnvTypeAlias}`);
   Logger.info(`MASTER_PATTERN: ${MASTER_PATTERN}`);
   Logger.info(`FEATURE_PATTERN: ${FEATURE_PATTERN}`);
+  Logger.info(`test123`);
   Logger.info(`FLUSH_PREVIEW_ENV: ${FLUSH_PREVIEW_ENV}`);
   Logger.info(`branchNames.headRef: ${branchNames.headRef}`);
   const environmentId =
