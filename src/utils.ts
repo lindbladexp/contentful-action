@@ -164,7 +164,7 @@ export const getBranchNames = (): BranchNames => {
   const { default_branch: defaultBranch } = payload.repository;
 
   // Check the eventName
-  Logger.success('getBranchNames function test')
+  Logger.success('getBranchNames function')
   Logger.info(`eventName: ${eventName}`)
   Logger.info(`payload: ${stringifyObject(payload)}`)
   switch (eventName) {
@@ -225,7 +225,6 @@ export const getEnvironment = async (
   Logger.info(`isEnvTypeAlias: ${isEnvTypeAlias}`);
   Logger.info(`MASTER_PATTERN: ${MASTER_PATTERN}`);
   Logger.info(`FEATURE_PATTERN: ${FEATURE_PATTERN}`);
-  Logger.info(`test123`);
   Logger.info(`FLUSH_PREVIEW_ENV: ${FLUSH_PREVIEW_ENV}`);
   Logger.info(`branchNames.headRef: ${branchNames.headRef}`);
   const environmentId =
