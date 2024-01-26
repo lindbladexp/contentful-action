@@ -1,40 +1,40 @@
 {
-  "name": "contentful-migrations-action",
-  "version": "1.0.9",
-  "description": "JavaScript Action for Contentful migrations",
-  "main": "dist/index.js",
-  "scripts": {
-    "lint": "eslint src/** --ext .ts",
-    "package": "ncc build src/index.ts -o dist",
-    "test": "jest"
-  },
-  "keywords": [
-    "GitHub",
-    "Actions",
-    "JavaScript",
-    "Contentful"
-  ],
-  "author": "GitHub",
-  "license": "MIT",
-  "dependencies": {
-    "@actions/core": "^1.4.0",
-    "@actions/github": "^5.0.0",
-    "any-observable": "^0.5.1",
-    "chalk": "^4.1.2",
-    "contentful-management": "10.6.2",
-    "contentful-migration": "4.9.1",
-    "rxjs": "^7.5.5",
-    "rxjs-compat": "^6.6.7",
-    "to-semver": "^4.0.0",
-    "tslib": "^2.3.0"
-  },
-  "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.29.0",
-    "@typescript-eslint/parser": "^4.29.0",
-    "@zeit/ncc": "^0.20.5",
-    "eslint": "^7.32.0",
-    "jest": "^27.0.6",
-    "prettier": "^2.3.2",
-    "typescript": "^4.7.3"
-  }
+	"name": "contentful-migrations-action",
+	"version": "1.0.10",
+	"description": "JavaScript Action for Contentful migrations",
+	"main": "dist/index.js",
+	"scripts": {
+		"lint": "eslint src/** --ext .ts",
+		"package": "ncc build src/index.ts -o dist",
+		"test": "jest"
+	},
+	"keywords": [
+		"GitHub",
+		"Actions",
+		"JavaScript",
+		"Contentful"
+	],
+	"author": "GitHub",
+	"license": "MIT",
+	"dependencies": {
+		"@actions/core": "^1.4.0",
+		"@actions/github": "^5.0.0",
+		"any-observable": "^0.5.1",
+		"chalk": "^4.1.2",
+		"contentful-management": "10.6.2",
+		"contentful-migration": "4.9.1",
+		"rxjs": "^7.5.5",
+		"rxjs-compat": "^6.6.7",
+		"to-semver": "^4.0.0",
+		"tslib": "^2.3.0"
+	},
+	"devDependencies": {
+		"@typescript-eslint/eslint-plugin": "^4.29.0",
+		"@typescript-eslint/parser": "^4.29.0",
+		"@zeit/ncc": "^0.20.5",
+		"eslint": "^7.32.0",
+		"jest": "^27.0.6",
+		"prettier": "^2.3.2",
+		"typescript": "^4.7.3"
+	}
 }
