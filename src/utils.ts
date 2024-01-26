@@ -253,16 +253,22 @@ export const getEnvironment = async (
   );
 
   try {
+    const environment = await space.getEnvironment(environmentId);
     if (FLUSH_PREVIEW_ENV) {
-      const environment = await space.getEnvironment(environmentId);
       await environment?.delete();
+      Logger.success(`Environment deleted: "${environmentId}"`);
     } else {
       Logger.log(
         `FLUSH_PREVIEW_ENV is set to ${FLUSH_PREVIEW_ENV}. Skipping flush.`
-      );
-    }
-    Logger.success(`Environment deleted: "${environmentId}"`);
-  } catch (e) {
+        );
+        return {
+          environmentType,
+          environmentNames,
+          environmentId,
+          environment,
+        };
+      }
+    } catch (e) {
     Logger.log(`Environment not found: "${environmentId}"`);
   }
 

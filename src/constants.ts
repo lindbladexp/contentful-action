@@ -44,7 +44,7 @@ export const VERSION_FIELD = getInputOr('version_field', DEFAULT_VERSION_FIELD);
 export const DELETE_FEATURE = booleanOr(core.getInput('delete_feature'), DEFAULT_DELETE_FEATURE);
 export const SET_ALIAS = booleanOr(core.getInput('set_alias'), DEFAULT_SET_ALIAS);
 export const MIGRATIONS_DIR = path.join(GITHUB_WORKSPACE, getInputOr('migrations_dir', DEFAULT_MIGRATIONS_DIR));
-export const FLUSH_PREVIEW_ENV = booleanOr('flush_preview_env', DEFAULT_FLUSH_PREVIEW_ENV);
+export const FLUSH_PREVIEW_ENV = booleanOr(core.getInput('flush_preview_env'), DEFAULT_FLUSH_PREVIEW_ENV);
 
 export const CONTENTFUL_ALIAS = "master";
 export const DELAY = 32_000;
