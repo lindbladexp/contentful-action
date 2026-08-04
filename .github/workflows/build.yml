@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     name: Lint, test and verify dist
     steps:
       - name: Check out code
@@ -33,6 +33,10 @@ jobs:
 
       - name: Lint
         run: pnpm lint
+
+      # ncc bundles without type checking, so nothing else catches type errors.
+      - name: Typecheck
+        run: pnpm typecheck
 
       - name: Test
         run: pnpm test
