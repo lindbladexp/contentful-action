@@ -198617,7 +198617,7 @@ const matchers = {
     [Matcher.YYYY]: (date) => `${date.getUTCFullYear()}`,
     [Matcher.YY]: (date) => `${date.getUTCFullYear()}`.substr(2, 2),
     [Matcher.MM]: (date) => `${date.getUTCMonth() + 1}`.padStart(2, "0"),
-    [Matcher.DD]: (date) => `${date.getDate()}`.padStart(2, "0"),
+    [Matcher.DD]: (date) => `${date.getUTCDate()}`.padStart(2, "0"),
     [Matcher.branch]: (branchName) => {
         Logger.success('matchers[Matcher.branch]');
         Logger.info(`Matcher.branch ${Matcher.branch}`);

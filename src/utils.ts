@@ -107,7 +107,8 @@ export const matchers = {
   [Matcher.YY]: (date: Date): string => `${date.getUTCFullYear()}`.substr(2, 2),
   [Matcher.MM]: (date: Date): string =>
     `${date.getUTCMonth() + 1}`.padStart(2, "0"),
-  [Matcher.DD]: (date: Date): string => `${date.getDate()}`.padStart(2, "0"),
+  [Matcher.DD]: (date: Date): string =>
+    `${date.getUTCDate()}`.padStart(2, "0"),
   [Matcher.branch]: (branchName: string): string => {
     Logger.success('matchers[Matcher.branch]')
     Logger.info(`Matcher.branch ${Matcher.branch}`)

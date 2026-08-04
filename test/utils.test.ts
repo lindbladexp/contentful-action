@@ -96,6 +96,7 @@ describe('getNameFromPattern', () => {
     ['[YYYY]', '2026'],
     ['[YY]', '26'],
     ['[MM]', '03'],
+    ['[DD]', '04'],
     ['[hh]', '23'],
     ['[mm]', '06'],
     ['[ss]', '07'],
@@ -104,8 +105,8 @@ describe('getNameFromPattern', () => {
   });
 
   it('resolves the default master pattern', () => {
-    expect(getNameFromPattern('master-[YYYY]-[MM]-[mm][ss]')).toBe(
-      'master-2026-03-0607'
+    expect(getNameFromPattern('master-[YYYY]-[MM]-[DD]-[mm][ss]')).toBe(
+      'master-2026-03-04-0607'
     );
   });
 
@@ -117,10 +118,10 @@ describe('getNameFromPattern', () => {
 
   it('resolves a pattern combining date parts and the branch', () => {
     expect(
-      getNameFromPattern('sandbox-[branch]-[YYYY][MM]', {
+      getNameFromPattern('sandbox-[branch]-[YYYY][MM][DD]', {
         branchName: 'feature/x',
       })
-    ).toBe('sandbox-feature-x-202603');
+    ).toBe('sandbox-feature-x-20260304');
   });
 
   it('leaves a pattern without placeholders untouched', () => {
