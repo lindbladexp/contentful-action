@@ -4,7 +4,7 @@
 	"description": "JavaScript Action for Contentful migrations",
 	"main": "dist/index.js",
 	"scripts": {
-		"lint": "eslint src/** --ext .ts",
+		"lint": "eslint src",
 		"package": "ncc build src/index.ts -o dist",
 		"test": "jest --passWithNoTests"
 	},
@@ -17,26 +17,26 @@
 	"author": "GitHub",
 	"license": "MIT",
 	"packageManager": "pnpm@9.15.9",
+	"engines": {
+		"node": ">=24"
+	},
 	"dependencies": {
-		"@actions/core": "^1.10.1",
-		"@actions/github": "^6.0.0",
-		"any-observable": "^0.5.1",
+		"@actions/core": "^2.0.3",
+		"@actions/github": "^8.0.1",
 		"chalk": "^4.1.2",
 		"contentful-management": "12.14.0",
 		"contentful-migration": "5.1.0",
-		"rxjs": "^7.5.5",
-		"rxjs-compat": "^6.6.7",
 		"to-semver": "^4.0.0",
 		"tslib": "^2.3.0"
 	},
 	"devDependencies": {
+		"@eslint/js": "^10",
 		"@types/node": "^24",
-		"@typescript-eslint/eslint-plugin": "^4.29.0",
-		"@typescript-eslint/parser": "^4.29.0",
-		"@vercel/ncc": "^0.38.1",
-		"eslint": "^7.32.0",
-		"jest": "^27.0.6",
+		"@vercel/ncc": "^0.44.1",
+		"eslint": "^10.8.0",
+		"jest": "^30.4.2",
 		"prettier": "^2.3.2",
-		"typescript": "^5.9.3"
+		"typescript": "^5.9.3",
+		"typescript-eslint": "^8"
 	}
 }

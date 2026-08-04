@@ -87,7 +87,7 @@ export const branchNameToEnvironmentName = (branchName: string): string => {
     return newBranchName
   } catch (e) {
     console.trace('branchNameToEnvironmentName error', e)
-    throw new Error(e)
+    throw new Error(String(e), { cause: e })
   }
 }
 
@@ -268,7 +268,7 @@ export const getEnvironment = async (
           environment,
         };
       }
-    } catch (e) {
+    } catch {
     Logger.log(`Environment not found: "${environmentId}"`);
   }
 
@@ -291,6 +291,6 @@ export const getEnvironment = async (
     Logger.error(
       `Failed creating new environment with environmentId: "${environmentId}"`
     );
-    throw new Error(e);
+    throw new Error(String(e), { cause: e });
   }
 };

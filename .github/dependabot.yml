@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      dev-dependencies:
+        dependency-type: "development"
+    ignore:
+      # Pinned to the runtime declared in action.yml (`using: node24`).
+      - dependency-name: "@types/node"
+        versions: [">=25"]
+      # These majors are ESM-only; this action is bundled as CommonJS.
+      - dependency-name: "chalk"
+        versions: [">=5"]
+      - dependency-name: "@actions/core"
+        versions: [">=3"]
+      - dependency-name: "@actions/github"
+        versions: [">=9"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

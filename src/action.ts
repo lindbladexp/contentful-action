@@ -216,7 +216,7 @@ export const runAction = async (space: Space): Promise<void> => {
       const environment = await space.getEnvironment(environmentIdToDelete);
       await environment?.delete();
       Logger.success(`Deleted the environment: ${environmentIdToDelete}`);
-    } catch (error) {
+    } catch {
       Logger.error('Cannot delete the environment');
     }
   }

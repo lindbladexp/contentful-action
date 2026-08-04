@@ -1,0 +1,50 @@
+name: Build
+
+on:
+  pull_request:
+    branches:
+      - "**"
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Lint, test and verify dist
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      # dist/ is committed and is what actually runs when this action is used,
+      # so a stale bundle silently ships old code. Rebuild it and fail if the
+      # result differs from what was committed.
+      - name: Verify dist/ is up to date
+        run: |
+          pnpm package
+          if [ -n "$(git status --porcelain dist)" ]; then
+            echo "::error::dist/ is out of date — run 'pnpm package' and commit the result."
+            git --no-pager diff --stat dist
+            exit 1
+          fi
