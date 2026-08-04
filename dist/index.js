@@ -198451,7 +198451,6 @@ function toSemver(versions, options = {}) {
 ;// CONCATENATED MODULE: ./src/constants.ts
 
 
-const { GITHUB_WORKSPACE, LOG_LEVEL, } = process.env;
 const booleanOr = (str, fallback) => {
     switch (str) {
         case "true":
@@ -198469,6 +198468,12 @@ const getInputOr = (coreInput, fallback) => {
     }
     return fallback;
 };
+/**
+ * `refs/heads/foo` and `foo` name the same branch. Everything downstream of the
+ * inputs and the event payload deals in bare branch names, because that is what
+ * the `[branch]` pattern placeholder interpolates.
+ */
+const stripRefsHeads = (ref) => ref.replace(/^refs\/heads\//, '');
 const DEFAULT_MIGRATIONS_DIR = "migrations";
 const DEFAULT_MASTER_PATTERN = "master-[YYYY]-[MM]-[DD]-[mm][ss]";
 const DEFAULT_FEATURE_PATTERN = "GH-[branch]";
@@ -198477,19 +198482,40 @@ const DEFAULT_VERSION_FIELD = "version";
 const DEFAULT_DELETE_FEATURE = false;
 const DEFAULT_SET_ALIAS = false;
 const DEFAULT_FLUSH_PREVIEW_ENV = true;
-const SPACE_ID = core.getInput('space_id', { required: true });
-const MANAGEMENT_API_KEY = core.getInput('management_api_key', { required: true });
-const VERSION_CONTENT_TYPE = getInputOr('version_content_type', DEFAULT_VERSION_CONTENT_TYPE);
-const FEATURE_PATTERN = getInputOr('feature_pattern', DEFAULT_FEATURE_PATTERN);
-const MASTER_PATTERN = getInputOr('master_pattern', DEFAULT_MASTER_PATTERN);
-const VERSION_FIELD = getInputOr('version_field', DEFAULT_VERSION_FIELD);
-const DELETE_FEATURE = booleanOr(core.getInput('delete_feature'), DEFAULT_DELETE_FEATURE);
-const SET_ALIAS = booleanOr(core.getInput('set_alias'), DEFAULT_SET_ALIAS);
-const MIGRATIONS_DIR = external_path_default().join(GITHUB_WORKSPACE, getInputOr('migrations_dir', DEFAULT_MIGRATIONS_DIR));
-const FLUSH_PREVIEW_ENV = booleanOr(core.getInput('flush_preview_env'), DEFAULT_FLUSH_PREVIEW_ENV);
 const CONTENTFUL_ALIAS = "master";
 const DELAY = 32_000;
 const MAX_NUMBER_OF_TRIES = 10;
+/**
+ * Resolve the action inputs into a Config.
+ *
+ * This is deliberately a function and not a set of module-level constants: the
+ * required inputs throw when missing, and as import-time side effects those
+ * throws escaped the try/catch in index.ts and surfaced as an unhandled module
+ * load failure instead of a `core.setFailed()` with a useful message.
+ */
+const getConfig = () => {
+    const workspace = process.env.GITHUB_WORKSPACE;
+    if (!workspace) {
+        throw new Error('GITHUB_WORKSPACE is not set, cannot resolve the migrations directory');
+    }
+    return {
+        spaceId: core.getInput('space_id', { required: true }),
+        managementApiKey: core.getInput('management_api_key', { required: true }),
+        versionContentType: getInputOr('version_content_type', DEFAULT_VERSION_CONTENT_TYPE),
+        versionField: getInputOr('version_field', DEFAULT_VERSION_FIELD),
+        // Null, not "", so that "was a head branch supplied?" is a single check
+        // both here and in getBranchNames().
+        headRef: core.getInput('head_ref')
+            ? stripRefsHeads(core.getInput('head_ref'))
+            : null,
+        featurePattern: getInputOr('feature_pattern', DEFAULT_FEATURE_PATTERN),
+        masterPattern: getInputOr('master_pattern', DEFAULT_MASTER_PATTERN),
+        deleteFeature: booleanOr(core.getInput('delete_feature'), DEFAULT_DELETE_FEATURE),
+        setAlias: booleanOr(core.getInput('set_alias'), DEFAULT_SET_ALIAS),
+        flushPreviewEnv: booleanOr(core.getInput('flush_preview_env'), DEFAULT_FLUSH_PREVIEW_ENV),
+        migrationsDir: external_path_default().join(workspace, getInputOr('migrations_dir', DEFAULT_MIGRATIONS_DIR)),
+    };
+};
 
 // EXTERNAL MODULE: ./node_modules/.pnpm/chalk@4.1.2/node_modules/chalk/source/index.js
 var source = __nccwpck_require__(41190);
@@ -198525,7 +198551,7 @@ const Logger = {
         console.log("ℹ️", source_default().blue(message));
     },
     verbose(message) {
-        if (LOG_LEVEL === "verbose") {
+        if (process.env.LOG_LEVEL === "verbose") {
             console.log(source_default().white(message));
         }
     },
@@ -198627,31 +198653,43 @@ const getNameFromPattern = (pattern, { branchName } = {}) => {
     });
 };
 /**
- * Get the branchNames based on the eventName
+ * Get the branchNames based on the eventName, with the `head_ref` input taking
+ * precedence over the event.
  */
-const getBranchNames = () => {
+const getBranchNames = (config) => {
     const { eventName, payload } = github.context;
     const { default_branch: defaultBranch } = payload.repository;
     // Check the eventName
     Logger.success('getBranchNames function');
     Logger.info(`eventName: ${eventName}`);
     Logger.info(`payload: ${stringifyObject(payload)}`);
-    switch (eventName) {
-        // If it is a Pull request we return the head and base ref
-        case EventNames.pullRequest:
-            return {
-                headRef: payload.pull_request.head.ref,
-                baseRef: payload.pull_request.base.ref,
-                defaultBranch,
-            };
-        // If is not a Pull request we need work on the baseRef therefore head is null
-        default:
-            return {
-                headRef: null,
-                baseRef: payload.ref.replace(/^refs\/heads\//, ''),
-                defaultBranch,
-            };
+    const fromEvent = (() => {
+        switch (eventName) {
+            // If it is a Pull request we return the head and base ref
+            case EventNames.pullRequest:
+                return {
+                    headRef: payload.pull_request.head.ref,
+                    baseRef: payload.pull_request.base.ref,
+                    defaultBranch,
+                };
+            // If is not a Pull request we need work on the baseRef therefore head is null
+            default:
+                return {
+                    headRef: null,
+                    baseRef: stripRefsHeads(payload.ref),
+                    defaultBranch,
+                };
+        }
+    })();
+    // An explicit head_ref wins over the event. Without it a run triggered by
+    // anything other than a pull request has no head branch at all, so it can
+    // only ever resolve the master pattern; supplying one is what lets a manually
+    // dispatched run target a feature environment.
+    if (config.headRef) {
+        Logger.info(`head_ref input overrides the event head ref: ${config.headRef}`);
+        return { ...fromEvent, headRef: config.headRef };
     }
+    return fromEvent;
 };
 /**
  * Get the environment from a space
@@ -198659,7 +198697,7 @@ const getBranchNames = () => {
  * @param space
  * @param branchNames
  */
-const getEnvironment = async (space, branchNames) => {
+const getEnvironment = async (space, branchNames, config) => {
     Logger.success('getEnvironment function');
     Logger.info(`space ${stringifyObject(space)}`);
     Logger.info(`branchNames ${stringifyObject(branchNames)}`);
@@ -198672,26 +198710,20 @@ const getEnvironment = async (space, branchNames) => {
     // If the Pull Request is merged and the base is the repository default_name (master|main, ...)
     // Then create an environment name for the given master_pattern
     // Else create an environment name for the given feature_pattern
-    Logger.info(`MASTER_PATTERN: ${MASTER_PATTERN} | FEATURE_PATTERN: ${FEATURE_PATTERN}`);
+    Logger.info(`masterPattern: ${config.masterPattern} | featurePattern: ${config.featurePattern}`);
     Logger.info(`branchNames.baseRef: ${branchNames.baseRef}`);
     Logger.info(`branchNames.defaultBranch: ${branchNames.defaultBranch}`);
     Logger.info(`github.context.payload: ${stringifyObject(github.context.payload)}`);
-    // github.context.payload.pull_request?.merged... however for testing we're pushing directly to main...
     const environmentType = branchNames.baseRef === branchNames.defaultBranch &&
         github.context.payload.pull_request?.merged
         ? CONTENTFUL_ALIAS
         : "feature";
     Logger.info(`environmentType: ${environmentType}`);
-    Logger.info(`CONTENTFUL_ALIAS: ${CONTENTFUL_ALIAS}`);
-    const isEnvTypeAlias = environmentType === CONTENTFUL_ALIAS;
-    Logger.info(`isEnvTypeAlias: ${isEnvTypeAlias}`);
-    Logger.info(`MASTER_PATTERN: ${MASTER_PATTERN}`);
-    Logger.info(`FEATURE_PATTERN: ${FEATURE_PATTERN}`);
-    Logger.info(`FLUSH_PREVIEW_ENV: ${FLUSH_PREVIEW_ENV}`);
+    Logger.info(`flushPreviewEnv: ${config.flushPreviewEnv}`);
     Logger.info(`branchNames.headRef: ${branchNames.headRef}`);
     const environmentId = environmentType === CONTENTFUL_ALIAS
-        ? getNameFromPattern(MASTER_PATTERN)
-        : getNameFromPattern(FEATURE_PATTERN, {
+        ? getNameFromPattern(config.masterPattern)
+        : getNameFromPattern(config.featurePattern, {
             branchName: branchNames.headRef,
         });
     Logger.info(`environmentId: "${environmentId}"`);
@@ -198711,12 +198743,12 @@ const getEnvironment = async (space, branchNames) => {
     Logger.log(`Checking for existing versions of environment: "${environmentId}"`);
     try {
         const environment = await space.getEnvironment(environmentId);
-        if (FLUSH_PREVIEW_ENV) {
+        if (config.flushPreviewEnv) {
             await environment?.delete();
             Logger.success(`Environment deleted: "${environmentId}"`);
         }
         else {
-            Logger.log(`FLUSH_PREVIEW_ENV is set to ${FLUSH_PREVIEW_ENV}. Skipping flush.`);
+            Logger.log(`flush_preview_env is set to ${config.flushPreviewEnv}. Skipping flush.`);
             return {
                 environmentType,
                 environmentNames,
@@ -198761,12 +198793,13 @@ const readdirAsync = (0,external_util_.promisify)(external_fs_.readdir);
 /**
  * Run the action
  * @param space
+ * @param config
  */
-const runAction = async (space) => {
+const runAction = async (space, config) => {
     // Get base and if a pull request also the head ref
-    const branchNames = getBranchNames();
+    const branchNames = getBranchNames(config);
     Logger.verbose(`Branch names for getting environment ${JSON.stringify(branchNames)}`);
-    const { environmentId, environment, environmentType } = await getEnvironment(space, branchNames);
+    const { environmentId, environment, environmentType } = await getEnvironment(space, branchNames, config);
     Logger.verbose(`environment id: ${environmentId}`);
     Logger.verbose(`environment: ${JSON.stringify(environment)}`);
     Logger.verbose(`environment type: ${environmentType}`);
@@ -198806,22 +198839,22 @@ const runAction = async (space) => {
     Logger.verbose('Read all the available migrations from the file system');
     // Check for available migrations
     // Migration scripts need to be sorted in order to run without conflicts
-    const availableMigrations = toSemver((await readdirAsync(MIGRATIONS_DIR)).map((file) => filenameToVersion(file)), { clean: false }).reverse();
+    const availableMigrations = toSemver((await readdirAsync(config.migrationsDir)).map((file) => filenameToVersion(file)), { clean: false }).reverse();
     Logger.verbose(`versionOrder: ${JSON.stringify(availableMigrations, null, 4)}`);
     Logger.verbose('Find current version of the contentful space');
     const { items: versions } = await environment.getEntries({
-        content_type: VERSION_CONTENT_TYPE,
+        content_type: config.versionContentType,
     });
     // If there is no entry or more than one of CONTENTFUL_VERSION_TRACKING
     // Then throw an Error and abort
     if (versions.length === 0) {
-        throw new Error(`Error occured, no entry of type "${VERSION_CONTENT_TYPE}" was found`);
+        throw new Error(`Error occured, no entry of type "${config.versionContentType}" was found`);
     }
     else if (versions.length > 1) {
-        throw new Error(`There should only be one entry of type "${VERSION_CONTENT_TYPE}"`);
+        throw new Error(`There should only be one entry of type "${config.versionContentType}"`);
     }
     const [storedVersionEntry] = versions;
-    const currentVersionString = storedVersionEntry.fields[VERSION_FIELD][defaultLocale];
+    const currentVersionString = storedVersionEntry.fields[config.versionField][defaultLocale];
     Logger.verbose('Evaluate which migrations to run');
     const currentMigrationIndex = availableMigrations.indexOf(currentVersionString);
     // If the migration can't be found
@@ -198831,9 +198864,9 @@ const runAction = async (space) => {
     }
     const migrationsToRun = availableMigrations.slice(currentMigrationIndex + 1);
     const migrationOptions = {
-        spaceId: SPACE_ID,
+        spaceId: config.spaceId,
         environmentId,
-        accessToken: MANAGEMENT_API_KEY,
+        accessToken: config.managementApiKey,
         yes: true,
     };
     Logger.verbose('Run migrations and update version entry');
@@ -198841,7 +198874,7 @@ const runAction = async (space) => {
     let migrationToRun;
     let mutableStoredVersionEntry = storedVersionEntry;
     while ((migrationToRun = migrationsToRun.shift())) {
-        const filePath = external_path_default().join(MIGRATIONS_DIR, versionToFilename(migrationToRun));
+        const filePath = external_path_default().join(config.migrationsDir, versionToFilename(migrationToRun));
         Logger.verbose(`Running ${filePath}`);
         await (0,built.runMigration)(Object.assign(migrationOptions, {
             filePath,
@@ -198850,13 +198883,13 @@ const runAction = async (space) => {
         mutableStoredVersionEntry.fields.version[defaultLocale] = migrationToRun;
         mutableStoredVersionEntry = await mutableStoredVersionEntry.update();
         mutableStoredVersionEntry = await mutableStoredVersionEntry.publish();
-        Logger.success(`Updated field ${VERSION_FIELD} in ${VERSION_CONTENT_TYPE} entry to ${migrationToRun}`);
+        Logger.success(`Updated field ${config.versionField} in ${config.versionContentType} entry to ${migrationToRun}`);
     }
     Logger.log(`Checking if we need to update ${CONTENTFUL_ALIAS} alias`);
     // If the environmentType is ${CONTENTFUL_ALIAS} ("master")
     // Then set the alias to the new environment
     // Else inform the user
-    if (environmentType === CONTENTFUL_ALIAS && SET_ALIAS) {
+    if (environmentType === CONTENTFUL_ALIAS && config.setAlias) {
         Logger.log(`Running on ${CONTENTFUL_ALIAS}.`);
         Logger.log(`Updating ${CONTENTFUL_ALIAS} alias.`);
         await space
@@ -198876,11 +198909,11 @@ const runAction = async (space) => {
     // And the baseRef is the repository default_branch (master|main ...)
     // And the Pull Request has been merged
     // Then delete the sandbox environment
-    if (DELETE_FEATURE &&
+    if (config.deleteFeature &&
         branchNames.baseRef === branchNames.defaultBranch &&
         github.context.payload.pull_request?.merged) {
         try {
-            const environmentIdToDelete = getNameFromPattern(FEATURE_PATTERN, {
+            const environmentIdToDelete = getNameFromPattern(config.featurePattern, {
                 branchName: branchNames.headRef,
             });
             Logger.log(`Delete the environment: ${environmentIdToDelete}`);
@@ -198906,14 +198939,15 @@ const runAction = async (space) => {
 
 async function main() {
     try {
+        const config = getConfig();
         // `legacy` is the nested client (space.getEnvironment(), entry.update(), ...)
         // that this action is built on. As of contentful-management v12 the plain
         // client is the default, so the nested one must be requested explicitly.
         const client = createClient({
-            accessToken: MANAGEMENT_API_KEY,
+            accessToken: config.managementApiKey,
         }, { type: 'legacy' });
-        const space = await client.getSpace(SPACE_ID);
-        await runAction(space);
+        const space = await client.getSpace(config.spaceId);
+        await runAction(space, config);
     }
     catch (error) {
         Logger.error(error);

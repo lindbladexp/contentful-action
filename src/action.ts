@@ -7,18 +7,8 @@ import { promisify } from 'util';
 import toSemver from 'to-semver';
 import type { Space } from 'contentful-management';
 
-import {
-  CONTENTFUL_ALIAS,
-  DELETE_FEATURE,
-  SET_ALIAS,
-  MANAGEMENT_API_KEY,
-  MAX_NUMBER_OF_TRIES,
-  MIGRATIONS_DIR,
-  SPACE_ID,
-  VERSION_CONTENT_TYPE,
-  VERSION_FIELD,
-  FEATURE_PATTERN,
-} from './constants';
+import { CONTENTFUL_ALIAS, MAX_NUMBER_OF_TRIES } from './constants';
+import type { Config } from './types';
 import {
   delay,
   filenameToVersion,
@@ -34,10 +24,14 @@ export const readdirAsync = promisify(readdir);
 /**
  * Run the action
  * @param space
+ * @param config
  */
-export const runAction = async (space: Space): Promise<void> => {
+export const runAction = async (
+  space: Space,
+  config: Config
+): Promise<void> => {
   // Get base and if a pull request also the head ref
-  const branchNames = getBranchNames();
+  const branchNames = getBranchNames(config);
 
   Logger.verbose(
     `Branch names for getting environment ${JSON.stringify(branchNames)}`
@@ -45,7 +39,8 @@ export const runAction = async (space: Space): Promise<void> => {
 
   const { environmentId, environment, environmentType } = await getEnvironment(
     space,
-    branchNames
+    branchNames,
+    config
   );
 
   Logger.verbose(`environment id: ${environmentId}`);
@@ -102,7 +97,7 @@ export const runAction = async (space: Space): Promise<void> => {
   // Check for available migrations
   // Migration scripts need to be sorted in order to run without conflicts
   const availableMigrations = toSemver(
-    (await readdirAsync(MIGRATIONS_DIR)).map((file) => filenameToVersion(file)),
+    (await readdirAsync(config.migrationsDir)).map((file) => filenameToVersion(file)),
     { clean: false }
   ).reverse();
 
@@ -112,24 +107,24 @@ export const runAction = async (space: Space): Promise<void> => {
 
   Logger.verbose('Find current version of the contentful space');
   const { items: versions } = await environment.getEntries({
-    content_type: VERSION_CONTENT_TYPE,
+    content_type: config.versionContentType,
   });
 
   // If there is no entry or more than one of CONTENTFUL_VERSION_TRACKING
   // Then throw an Error and abort
   if (versions.length === 0) {
     throw new Error(
-      `Error occured, no entry of type "${VERSION_CONTENT_TYPE}" was found`
+      `Error occured, no entry of type "${config.versionContentType}" was found`
     );
   } else if (versions.length > 1) {
     throw new Error(
-      `There should only be one entry of type "${VERSION_CONTENT_TYPE}"`
+      `There should only be one entry of type "${config.versionContentType}"`
     );
   }
 
   const [storedVersionEntry] = versions;
   const currentVersionString =
-    storedVersionEntry.fields[VERSION_FIELD][defaultLocale];
+    storedVersionEntry.fields[config.versionField][defaultLocale];
 
   Logger.verbose('Evaluate which migrations to run');
   const currentMigrationIndex = availableMigrations.indexOf(
@@ -146,9 +141,9 @@ export const runAction = async (space: Space): Promise<void> => {
 
   const migrationsToRun = availableMigrations.slice(currentMigrationIndex + 1);
   const migrationOptions = {
-    spaceId: SPACE_ID,
+    spaceId: config.spaceId,
     environmentId,
-    accessToken: MANAGEMENT_API_KEY,
+    accessToken: config.managementApiKey,
     yes: true,
   };
 
@@ -158,7 +153,7 @@ export const runAction = async (space: Space): Promise<void> => {
   let mutableStoredVersionEntry = storedVersionEntry;
   while ((migrationToRun = migrationsToRun.shift())) {
     const filePath = path.join(
-      MIGRATIONS_DIR,
+      config.migrationsDir,
       versionToFilename(migrationToRun)
     );
     Logger.verbose(`Running ${filePath}`);
@@ -174,7 +169,7 @@ export const runAction = async (space: Space): Promise<void> => {
     mutableStoredVersionEntry = await mutableStoredVersionEntry.publish();
 
     Logger.success(
-      `Updated field ${VERSION_FIELD} in ${VERSION_CONTENT_TYPE} entry to ${migrationToRun}`
+      `Updated field ${config.versionField} in ${config.versionContentType} entry to ${migrationToRun}`
     );
   }
 
@@ -183,7 +178,7 @@ export const runAction = async (space: Space): Promise<void> => {
   // Then set the alias to the new environment
   // Else inform the user
 
-  if (environmentType === CONTENTFUL_ALIAS && SET_ALIAS) {
+  if (environmentType === CONTENTFUL_ALIAS && config.setAlias) {
     Logger.log(`Running on ${CONTENTFUL_ALIAS}.`);
     Logger.log(`Updating ${CONTENTFUL_ALIAS} alias.`);
     await space
@@ -204,12 +199,12 @@ export const runAction = async (space: Space): Promise<void> => {
   // And the Pull Request has been merged
   // Then delete the sandbox environment
   if (
-    DELETE_FEATURE &&
+    config.deleteFeature &&
     branchNames.baseRef === branchNames.defaultBranch &&
     github.context.payload.pull_request?.merged
   ) {
     try {
-      const environmentIdToDelete = getNameFromPattern(FEATURE_PATTERN, {
+      const environmentIdToDelete = getNameFromPattern(config.featurePattern, {
         branchName: branchNames.headRef,
       });
       Logger.log(`Delete the environment: ${environmentIdToDelete}`);

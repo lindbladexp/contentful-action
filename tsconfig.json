@@ -1,8 +1,18 @@
 {
   "compilerOptions": {
     "target": "es2022",
-    "moduleResolution": "node",
-	"allowSyntheticDefaultImports": true,
-	"importHelpers": true
-  }
+    "lib": ["es2022"],
+    "types": ["node"],
+    // ncc (and vitest) bundle these sources, so resolve the way a bundler does.
+    // This is a type-check-only config: ncc does the emitting.
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "importHelpers": true,
+    // @actions/github's shipped types deep-import a path @octokit/core does not
+    // expose, so its .d.ts cannot be checked here.
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["src", "test"]
 }
