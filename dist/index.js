@@ -198570,7 +198570,7 @@ const delay = (time = DELAY) => new Promise((resolve) => setTimeout(resolve, tim
 const filenameToVersion = (file) => {
     Logger.success(`filenameToVersion function`);
     Logger.info(`file: ${file}`);
-    return file.replace(/\.js$/, "").replace(/_/g, ".");
+    return file.replace(/\.js$/, "");
 };
 /**
  * Convert versions to filenames
@@ -198581,7 +198581,7 @@ const filenameToVersion = (file) => {
 const versionToFilename = (version) => {
     Logger.success(`versionToFilename function`);
     Logger.info(`version: ${version}`);
-    return `${version.replace(/\\./g, "_")}.js`;
+    return `${version}.js`;
 };
 /**
  * Convert a branchName to a valid environmentName

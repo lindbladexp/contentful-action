@@ -54,7 +54,7 @@ export const delay = (time = DELAY): Promise<void> =>
 export const filenameToVersion = (file: string): string => {
   Logger.success(`filenameToVersion function`)
   Logger.info(`file: ${file}`)
-  return file.replace(/\.js$/, "").replace(/_/g, ".");
+  return file.replace(/\.js$/, "");
 }
 
 /**
@@ -66,7 +66,7 @@ export const filenameToVersion = (file: string): string => {
 export const versionToFilename = (version: string): string => {
   Logger.success(`versionToFilename function`)
   Logger.info(`version: ${version}`)
-  return `${version.replace(/\\./g, "_")}.js`;
+  return `${version}.js`;
 }
 
 /**

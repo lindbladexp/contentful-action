@@ -59,6 +59,9 @@ describe('filenameToVersion / versionToFilename', () => {
     '2.0.1-alpha.js',
     '2.0.1-alpha.2.js',
     '2.0.1-rc.1.js',
+    // Not a documented name, but it must still survive the round trip: the
+    // alternative is discovering a version whose file cannot be opened.
+    '1_0_1.js',
   ])('round-trips %s unchanged', (filename) => {
     expect(versionToFilename(filenameToVersion(filename))).toBe(filename);
   });
