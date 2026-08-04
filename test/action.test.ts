@@ -7,6 +7,7 @@ import { MAX_NUMBER_OF_TRIES } from '../src/constants';
 import {
   asSpace,
   cleanupMigrationsDirs,
+  environmentIn,
   makeAlias,
   makeApiKey,
   makeConfig,
@@ -172,7 +173,7 @@ describe('runAction', () => {
         makeConfig({ migrationsDir, versionContentType: 'environmentVersion' })
       );
 
-      const environment = space.environments.get('GH-feature-x');
+      const environment = environmentIn(space, 'GH-feature-x');
       expect(environment.getEntries).toHaveBeenCalledWith({
         content_type: 'environmentVersion',
       });
@@ -404,7 +405,7 @@ describe('runAction', () => {
         entries: [makeVersionEntry('1')],
         existingIds: ['sandbox-feature-x'],
       });
-      const featureEnvironment = space.environments.get('sandbox-feature-x');
+      const featureEnvironment = environmentIn(space, 'sandbox-feature-x');
 
       await runAction(
         asSpace(space),
@@ -426,7 +427,7 @@ describe('runAction', () => {
         entries: [makeVersionEntry('1')],
         existingIds: ['sandbox-feature-x'],
       });
-      const featureEnvironment = space.environments.get('sandbox-feature-x');
+      const featureEnvironment = environmentIn(space, 'sandbox-feature-x');
 
       await runAction(
         asSpace(space),
@@ -450,7 +451,7 @@ describe('runAction', () => {
         entries: [makeVersionEntry('1')],
         existingIds: ['sandbox-feature-x'],
       });
-      const featureEnvironment = space.environments.get('sandbox-feature-x');
+      const featureEnvironment = environmentIn(space, 'sandbox-feature-x');
 
       await runAction(
         asSpace(space),

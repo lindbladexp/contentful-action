@@ -223,6 +223,23 @@ export type FakeSpace = ReturnType<typeof makeSpace>;
 /** Cast a fake through to the SDK type the production signature demands. */
 export const asSpace = (space: FakeSpace): Space => space as unknown as Space;
 
+/**
+ * The environment a test expects the space to know about. `Map.get()` returns
+ * `FakeEnvironment | undefined`, so asserting on a mock off the raw result is
+ * both a type error under strictNullChecks and, when the id is wrong, a
+ * "cannot read properties of undefined" that says nothing about the cause.
+ */
+export const environmentIn = (space: FakeSpace, id: string): FakeEnvironment => {
+  const environment = space.environments.get(id);
+  if (!environment) {
+    const known = [...space.environments.keys()].join(', ') || '(none)';
+    throw new Error(
+      `Expected the space to have an environment "${id}". It has: ${known}`
+    );
+  }
+  return environment;
+};
+
 // --- migrations directory -------------------------------------------------
 
 const createdDirs: string[] = [];
