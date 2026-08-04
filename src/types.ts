@@ -1,4 +1,4 @@
-import { Environment } from "contentful-management/dist/typings/entities/environment";
+import type { Environment } from "contentful-management";
 
 export enum EventNames {
   pullRequest = "pull_request",

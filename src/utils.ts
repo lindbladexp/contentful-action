@@ -1,6 +1,6 @@
 import * as github from '@actions/github';
 import chalk from 'chalk';
-import { Space } from 'contentful-management/dist/typings/entities/space';
+import type { Space } from 'contentful-management';
 import {
   CONTENTFUL_ALIAS,
   DELAY,
@@ -83,7 +83,7 @@ export const branchNameToEnvironmentName = (branchName: string): string => {
   Logger.success(`branchNameToEnvironmentName function`)
   Logger.info(`branchName: ${branchName}`)
   try {
-    const newBranchName = branchName.replace(/[\/_.]/g, "-");
+    const newBranchName = branchName.replace(/[/_.]/g, "-");
     return newBranchName
   } catch (e) {
     console.trace('branchNameToEnvironmentName error', e)

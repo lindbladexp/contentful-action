@@ -5,7 +5,7 @@ import { readdir } from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import toSemver from 'to-semver';
-import { Space } from 'contentful-management/dist/typings/entities/space';
+import type { Space } from 'contentful-management';
 
 import {
   CONTENTFUL_ALIAS,
