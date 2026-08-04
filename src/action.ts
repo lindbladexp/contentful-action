@@ -164,7 +164,8 @@ export const runAction = async (
     );
     Logger.success(`Migration script ${migrationToRun}.js succeeded`);
 
-    mutableStoredVersionEntry.fields.version[defaultLocale] = migrationToRun;
+    mutableStoredVersionEntry.fields[config.versionField][defaultLocale] =
+      migrationToRun;
     mutableStoredVersionEntry = await mutableStoredVersionEntry.update();
     mutableStoredVersionEntry = await mutableStoredVersionEntry.publish();
 

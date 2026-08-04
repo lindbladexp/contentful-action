@@ -130,6 +130,21 @@ describe('runAction', () => {
       expect(entry.fields.version['en-US']).toBe('3');
     });
 
+    it('writes back to the configured version field', async () => {
+      recordMigrationRuns();
+      const migrationsDir = makeMigrationsDir(['1.js', '2.js']);
+      const entry = makeVersionEntry('1', { field: 'versionCounter' });
+      const space = makeSpace({ entries: [entry] });
+
+      await runAction(
+        asSpace(space),
+        makeConfig({ migrationsDir, versionField: 'versionCounter' })
+      );
+
+      expect(entry.fields.versionCounter['en-US']).toBe('2');
+      expect(entry.publish).toHaveBeenCalledTimes(1);
+    });
+
     it('reads the stored version using the default locale', async () => {
       const filePaths = recordMigrationRuns();
       const migrationsDir = makeMigrationsDir(['1.js', '2.js']);

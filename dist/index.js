@@ -198880,7 +198880,8 @@ const runAction = async (space, config) => {
             filePath,
         }));
         Logger.success(`Migration script ${migrationToRun}.js succeeded`);
-        mutableStoredVersionEntry.fields.version[defaultLocale] = migrationToRun;
+        mutableStoredVersionEntry.fields[config.versionField][defaultLocale] =
+            migrationToRun;
         mutableStoredVersionEntry = await mutableStoredVersionEntry.update();
         mutableStoredVersionEntry = await mutableStoredVersionEntry.publish();
         Logger.success(`Updated field ${config.versionField} in ${config.versionContentType} entry to ${migrationToRun}`);
