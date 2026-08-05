@@ -100,6 +100,7 @@ feature_pattern          | `string`  | No  | `GH-[branch]` | The pattern that sh
 version_content_type     | `string`  | No  | `versionTracking` | The content-type that tracks the version
 version_field            | `string`  | No  | `version` | The field-id that carries the version number
 migrations_dir           | `string`  | No  | `migrations` | The directory to look for migrations
+head_ref                 | `string`  | No  | `undefined` | The branch to treat as the feature branch, overriding the event payload. A `workflow_dispatch` run has no pull request to read a head branch from, so without this it can only resolve the `master_pattern`. Accepts `my-branch` or `refs/heads/my-branch`
 
 
 ## Workflow

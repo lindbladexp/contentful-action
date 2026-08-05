@@ -1,22 +1,27 @@
 name: Contentful Migration Example
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
-    branches:
-      - "**"
+  workflow_dispatch:
+    inputs:
+      head_ref:
+        description: "Branch to build the sandbox environment for. Defaults to the branch this workflow is dispatched from."
+        required: false
+        type: string
 
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     name: Contentful Migration Example
     permissions:
       contents: read
-      pull-requests: write
     steps:
+    # An empty ref means "the ref this run was dispatched from", so the
+    # migrations and the action code always come from the branch being built.
     - name: Check out code into the directory
       uses: actions/checkout@v7
+      with:
+        ref: ${{ inputs.head_ref }}
 
     - name: Contentful Migration
       id: migrate
@@ -29,17 +34,12 @@ jobs:
         version_field: version
         version_content_type: versionTracking
         migrations_dir: test-migrations
+        head_ref: ${{ inputs.head_ref || github.ref_name }}
         space_id: ${{ secrets.SPACE_ID }}
         management_api_key: ${{ secrets.MANAGEMENT_API_KEY }}
       env:
         LOG_LEVEL: verbose
 
-
-    - name: Comment on pull request
-      uses: lindbladexp/actions-comment-pull-request@v3
-      with:
-        comment-tag: contentful-environment
-        message: |
-          See changes to the [${{steps.migrate.outputs.environment_name }} ][1] Environment on Contentful.
-
-          [1]: ${{steps.migrate.outputs.environment_url}}
+    - name: Report environment
+      run: |
+        echo "See changes to the [${{ steps.migrate.outputs.environment_name }}](${{ steps.migrate.outputs.environment_url }}) Environment on Contentful." >> "$GITHUB_STEP_SUMMARY"

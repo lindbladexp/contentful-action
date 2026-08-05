@@ -4,9 +4,11 @@
 	"description": "JavaScript Action for Contentful migrations",
 	"main": "dist/index.js",
 	"scripts": {
-		"lint": "eslint src",
+		"lint": "eslint src test",
+		"typecheck": "tsc -p .",
 		"package": "ncc build src/index.ts -o dist",
-		"test": "jest --passWithNoTests"
+		"test": "vitest run",
+		"test:watch": "vitest"
 	},
 	"keywords": [
 		"GitHub",
@@ -34,9 +36,9 @@
 		"@types/node": "^24",
 		"@vercel/ncc": "^0.44.1",
 		"eslint": "^10.8.0",
-		"jest": "^30.4.2",
 		"prettier": "^2.3.2",
 		"typescript": "^5.9.3",
-		"typescript-eslint": "^8"
+		"typescript-eslint": "^8",
+		"vitest": "^4.1.10"
 	}
 }

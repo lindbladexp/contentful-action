@@ -1,16 +1,10 @@
 import * as github from '@actions/github';
 import chalk from 'chalk';
 import type { Space } from 'contentful-management';
-import {
-  CONTENTFUL_ALIAS,
-  DELAY,
-  FEATURE_PATTERN,
-  FLUSH_PREVIEW_ENV,
-  LOG_LEVEL,
-  MASTER_PATTERN,
-} from './constants';
+import { CONTENTFUL_ALIAS, DELAY, stripRefsHeads } from './constants';
 import {
   BranchNames,
+  Config,
   EnvironmentProps,
   EventNames,
   NameFromPatternArgs,
@@ -38,7 +32,7 @@ export const Logger = {
     console.log("ℹ️", chalk.blue(message));
   },
   verbose(message) {
-    if (LOG_LEVEL === "verbose") {
+    if (process.env.LOG_LEVEL === "verbose") {
       console.log(chalk.white(message));
     }
   },
@@ -60,7 +54,7 @@ export const delay = (time = DELAY): Promise<void> =>
 export const filenameToVersion = (file: string): string => {
   Logger.success(`filenameToVersion function`)
   Logger.info(`file: ${file}`)
-  return file.replace(/\.js$/, "").replace(/_/g, ".");
+  return file.replace(/\.js$/, "");
 }
 
 /**
@@ -72,7 +66,7 @@ export const filenameToVersion = (file: string): string => {
 export const versionToFilename = (version: string): string => {
   Logger.success(`versionToFilename function`)
   Logger.info(`version: ${version}`)
-  return `${version.replace(/\\./g, "_")}.js`;
+  return `${version}.js`;
 }
 
 /**
@@ -113,7 +107,8 @@ export const matchers = {
   [Matcher.YY]: (date: Date): string => `${date.getUTCFullYear()}`.substr(2, 2),
   [Matcher.MM]: (date: Date): string =>
     `${date.getUTCMonth() + 1}`.padStart(2, "0"),
-  [Matcher.DD]: (date: Date): string => `${date.getDate()}`.padStart(2, "0"),
+  [Matcher.DD]: (date: Date): string =>
+    `${date.getUTCDate()}`.padStart(2, "0"),
   [Matcher.branch]: (branchName: string): string => {
     Logger.success('matchers[Matcher.branch]')
     Logger.info(`Matcher.branch ${Matcher.branch}`)
@@ -157,9 +152,10 @@ export const getNameFromPattern = (
 };
 
 /**
- * Get the branchNames based on the eventName
+ * Get the branchNames based on the eventName, with the `head_ref` input taking
+ * precedence over the event.
  */
-export const getBranchNames = (): BranchNames => {
+export const getBranchNames = (config: Config): BranchNames => {
   const { eventName, payload } = github.context;
   const { default_branch: defaultBranch } = payload.repository;
 
@@ -167,22 +163,35 @@ export const getBranchNames = (): BranchNames => {
   Logger.success('getBranchNames function')
   Logger.info(`eventName: ${eventName}`)
   Logger.info(`payload: ${stringifyObject(payload)}`)
-  switch (eventName) {
-    // If it is a Pull request we return the head and base ref
-    case EventNames.pullRequest:
-      return {
-        headRef: payload.pull_request.head.ref,
-        baseRef: payload.pull_request.base.ref,
-        defaultBranch,
-      };
-    // If is not a Pull request we need work on the baseRef therefore head is null
-    default:
-      return {
-        headRef: null,
-        baseRef: payload.ref.replace(/^refs\/heads\//, ''),
-        defaultBranch,
-      };
+  const fromEvent = ((): BranchNames => {
+    switch (eventName) {
+      // If it is a Pull request we return the head and base ref
+      case EventNames.pullRequest:
+        return {
+          headRef: payload.pull_request.head.ref,
+          baseRef: payload.pull_request.base.ref,
+          defaultBranch,
+        };
+      // If is not a Pull request we need work on the baseRef therefore head is null
+      default:
+        return {
+          headRef: null,
+          baseRef: stripRefsHeads(payload.ref),
+          defaultBranch,
+        };
+    }
+  })();
+
+  // An explicit head_ref wins over the event. Without it a run triggered by
+  // anything other than a pull request has no head branch at all, so it can
+  // only ever resolve the master pattern; supplying one is what lets a manually
+  // dispatched run target a feature environment.
+  if (config.headRef) {
+    Logger.info(`head_ref input overrides the event head ref: ${config.headRef}`);
+    return { ...fromEvent, headRef: config.headRef };
   }
+
+  return fromEvent;
 };
 
 /**
@@ -193,7 +202,8 @@ export const getBranchNames = (): BranchNames => {
  */
 export const getEnvironment = async (
   space: Space,
-  branchNames: BranchNames
+  branchNames: BranchNames,
+  config: Config
 ): Promise<EnvironmentProps> => {
   Logger.success('getEnvironment function')
   Logger.info(`space ${stringifyObject(space)}`)
@@ -208,29 +218,23 @@ export const getEnvironment = async (
   // Then create an environment name for the given master_pattern
   // Else create an environment name for the given feature_pattern
   Logger.info(
-    `MASTER_PATTERN: ${MASTER_PATTERN} | FEATURE_PATTERN: ${FEATURE_PATTERN}`
+    `masterPattern: ${config.masterPattern} | featurePattern: ${config.featurePattern}`
   );
   Logger.info(`branchNames.baseRef: ${branchNames.baseRef}`);
   Logger.info(`branchNames.defaultBranch: ${branchNames.defaultBranch}`);
   Logger.info(`github.context.payload: ${stringifyObject(github.context.payload)}`)
-  // github.context.payload.pull_request?.merged... however for testing we're pushing directly to main...
   const environmentType =
     branchNames.baseRef === branchNames.defaultBranch &&
     github.context.payload.pull_request?.merged
       ? CONTENTFUL_ALIAS
       : "feature";
   Logger.info(`environmentType: ${environmentType}` );
-  Logger.info(`CONTENTFUL_ALIAS: ${CONTENTFUL_ALIAS}` );
-  const isEnvTypeAlias = environmentType === CONTENTFUL_ALIAS
-  Logger.info(`isEnvTypeAlias: ${isEnvTypeAlias}`);
-  Logger.info(`MASTER_PATTERN: ${MASTER_PATTERN}`);
-  Logger.info(`FEATURE_PATTERN: ${FEATURE_PATTERN}`);
-  Logger.info(`FLUSH_PREVIEW_ENV: ${FLUSH_PREVIEW_ENV}`);
+  Logger.info(`flushPreviewEnv: ${config.flushPreviewEnv}`);
   Logger.info(`branchNames.headRef: ${branchNames.headRef}`);
   const environmentId =
     environmentType === CONTENTFUL_ALIAS
-      ? getNameFromPattern(MASTER_PATTERN)
-      : getNameFromPattern(FEATURE_PATTERN, {
+      ? getNameFromPattern(config.masterPattern)
+      : getNameFromPattern(config.featurePattern, {
           branchName: branchNames.headRef,
         });
   Logger.info(`environmentId: "${environmentId}"`);
@@ -254,21 +258,21 @@ export const getEnvironment = async (
 
   try {
     const environment = await space.getEnvironment(environmentId);
-    if (FLUSH_PREVIEW_ENV) {
+    if (config.flushPreviewEnv) {
       await environment?.delete();
       Logger.success(`Environment deleted: "${environmentId}"`);
     } else {
       Logger.log(
-        `FLUSH_PREVIEW_ENV is set to ${FLUSH_PREVIEW_ENV}. Skipping flush.`
-        );
-        return {
-          environmentType,
-          environmentNames,
-          environmentId,
-          environment,
-        };
-      }
-    } catch {
+        `flush_preview_env is set to ${config.flushPreviewEnv}. Skipping flush.`
+      );
+      return {
+        environmentType,
+        environmentNames,
+        environmentId,
+        environment,
+      };
+    }
+  } catch {
     Logger.log(`Environment not found: "${environmentId}"`);
   }
 
