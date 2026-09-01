@@ -17,6 +17,12 @@ export interface EnvironmentNames {
 
 export type EnvironmentType = "master" | "feature";
 
+/**
+ * The `environment_type` input. "auto" infers the type from the event, which is
+ * the historical behaviour; the other two state it outright.
+ */
+export type EnvironmentTypeInput = EnvironmentType | "auto";
+
 export interface EnvironmentProps {
   environmentType: EnvironmentType;
   environmentNames: EnvironmentNames;
@@ -47,6 +53,14 @@ export interface Config {
   headRef: string | null;
   featurePattern: string;
   masterPattern: string;
+  /**
+   * Which environment the run targets. "auto" (the default) infers it from the
+   * event: a merged pull request into the default branch is "master" and
+   * everything else — including a plain push to the default branch — is
+   * "feature". Set it explicitly when the workflow knows better than the
+   * event does, e.g. a push-triggered deploy that promotes to the alias.
+   */
+  environmentType: EnvironmentTypeInput;
   deleteFeature: boolean;
   setAlias: boolean;
   flushPreviewEnv: boolean;

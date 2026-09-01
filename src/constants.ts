@@ -1,6 +1,6 @@
 import path from "path";
 import * as core from '@actions/core';
-import type { Config } from './types';
+import type { Config, EnvironmentTypeInput } from './types';
 
 const booleanOr = (str: string, fallback: boolean): boolean => {
   switch (str) {
@@ -11,6 +11,26 @@ const booleanOr = (str: string, fallback: boolean): boolean => {
     default:
       return fallback;
   }
+};
+
+/**
+ * `environment_type` is a closed set, and a typo in it would otherwise fall
+ * through to the inferred behaviour and migrate the wrong environment — so an
+ * unrecognised value is a hard error rather than a silent default.
+ */
+const environmentTypeOr = (
+  str: string,
+  fallback: EnvironmentTypeInput
+): EnvironmentTypeInput => {
+  if (!str) {
+    return fallback;
+  }
+  if (str === 'auto' || str === 'master' || str === 'feature') {
+    return str;
+  }
+  throw new Error(
+    `environment_type must be one of "auto", "master" or "feature", got "${str}"`
+  );
 };
 
 const getInputOr = (coreInput: string, fallback: string): string => {
@@ -37,6 +57,7 @@ export const DEFAULT_VERSION_FIELD = "version";
 export const DEFAULT_DELETE_FEATURE = false;
 export const DEFAULT_SET_ALIAS = false;
 export const DEFAULT_FLUSH_PREVIEW_ENV = true;
+export const DEFAULT_ENVIRONMENT_TYPE: EnvironmentTypeInput = 'auto';
 
 export const CONTENTFUL_ALIAS = "master";
 export const DELAY = 32_000;
@@ -78,6 +99,10 @@ export const getConfig = (): Config => {
       DEFAULT_DELETE_FEATURE
     ),
     setAlias: booleanOr(core.getInput('set_alias'), DEFAULT_SET_ALIAS),
+    environmentType: environmentTypeOr(
+      core.getInput('environment_type'),
+      DEFAULT_ENVIRONMENT_TYPE
+    ),
     flushPreviewEnv: booleanOr(
       core.getInput('flush_preview_env'),
       DEFAULT_FLUSH_PREVIEW_ENV
