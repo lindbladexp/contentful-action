@@ -198461,6 +198461,20 @@ const booleanOr = (str, fallback) => {
             return fallback;
     }
 };
+/**
+ * `environment_type` is a closed set, and a typo in it would otherwise fall
+ * through to the inferred behaviour and migrate the wrong environment — so an
+ * unrecognised value is a hard error rather than a silent default.
+ */
+const environmentTypeOr = (str, fallback) => {
+    if (!str) {
+        return fallback;
+    }
+    if (str === 'auto' || str === 'master' || str === 'feature') {
+        return str;
+    }
+    throw new Error(`environment_type must be one of "auto", "master" or "feature", got "${str}"`);
+};
 const getInputOr = (coreInput, fallback) => {
     const input = core.getInput(coreInput);
     if (input) {
@@ -198482,6 +198496,7 @@ const DEFAULT_VERSION_FIELD = "version";
 const DEFAULT_DELETE_FEATURE = false;
 const DEFAULT_SET_ALIAS = false;
 const DEFAULT_FLUSH_PREVIEW_ENV = true;
+const DEFAULT_ENVIRONMENT_TYPE = 'auto';
 const CONTENTFUL_ALIAS = "master";
 const DELAY = 32_000;
 const MAX_NUMBER_OF_TRIES = 10;
@@ -198512,6 +198527,7 @@ const getConfig = () => {
         masterPattern: getInputOr('master_pattern', DEFAULT_MASTER_PATTERN),
         deleteFeature: booleanOr(core.getInput('delete_feature'), DEFAULT_DELETE_FEATURE),
         setAlias: booleanOr(core.getInput('set_alias'), DEFAULT_SET_ALIAS),
+        environmentType: environmentTypeOr(core.getInput('environment_type'), DEFAULT_ENVIRONMENT_TYPE),
         flushPreviewEnv: booleanOr(core.getInput('flush_preview_env'), DEFAULT_FLUSH_PREVIEW_ENV),
         migrationsDir: external_path_default().join(workspace, getInputOr('migrations_dir', DEFAULT_MIGRATIONS_DIR)),
     };
@@ -198714,11 +198730,16 @@ const getEnvironment = async (space, branchNames, config) => {
     Logger.info(`branchNames.baseRef: ${branchNames.baseRef}`);
     Logger.info(`branchNames.defaultBranch: ${branchNames.defaultBranch}`);
     Logger.info(`github.context.payload: ${stringifyObject(github.context.payload)}`);
-    const environmentType = branchNames.baseRef === branchNames.defaultBranch &&
+    // The inferred type only ever reads "master" off a merged pull request, so a
+    // push-triggered deploy — which carries no pull_request payload — can never
+    // reach the alias on its own. `environment_type` is how such a workflow says
+    // outright which environment it means.
+    const inferredType = branchNames.baseRef === branchNames.defaultBranch &&
         github.context.payload.pull_request?.merged
         ? CONTENTFUL_ALIAS
         : "feature";
-    Logger.info(`environmentType: ${environmentType}`);
+    const environmentType = config.environmentType === 'auto' ? inferredType : config.environmentType;
+    Logger.info(`environmentType: ${environmentType} (environment_type input: ${config.environmentType}, inferred: ${inferredType})`);
     Logger.info(`flushPreviewEnv: ${config.flushPreviewEnv}`);
     Logger.info(`branchNames.headRef: ${branchNames.headRef}`);
     const environmentId = environmentType === CONTENTFUL_ALIAS

@@ -223,12 +223,20 @@ export const getEnvironment = async (
   Logger.info(`branchNames.baseRef: ${branchNames.baseRef}`);
   Logger.info(`branchNames.defaultBranch: ${branchNames.defaultBranch}`);
   Logger.info(`github.context.payload: ${stringifyObject(github.context.payload)}`)
-  const environmentType =
+  // The inferred type only ever reads "master" off a merged pull request, so a
+  // push-triggered deploy — which carries no pull_request payload — can never
+  // reach the alias on its own. `environment_type` is how such a workflow says
+  // outright which environment it means.
+  const inferredType =
     branchNames.baseRef === branchNames.defaultBranch &&
     github.context.payload.pull_request?.merged
       ? CONTENTFUL_ALIAS
       : "feature";
-  Logger.info(`environmentType: ${environmentType}` );
+  const environmentType =
+    config.environmentType === 'auto' ? inferredType : config.environmentType;
+  Logger.info(
+    `environmentType: ${environmentType} (environment_type input: ${config.environmentType}, inferred: ${inferredType})`
+  );
   Logger.info(`flushPreviewEnv: ${config.flushPreviewEnv}`);
   Logger.info(`branchNames.headRef: ${branchNames.headRef}`);
   const environmentId =

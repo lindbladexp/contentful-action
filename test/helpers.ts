@@ -18,6 +18,7 @@ export const makeConfig = (overrides: Partial<Config> = {}): Config => ({
   headRef: null,
   featurePattern: 'GH-[branch]',
   masterPattern: 'master-[YYYY]-[MM]-[DD]-[mm][ss]',
+  environmentType: 'auto',
   deleteFeature: false,
   setAlias: false,
   flushPreviewEnv: true,

@@ -24,6 +24,9 @@ inputs:
   flush_preview_env:
     description: "Set to false if you don't want to recreate the preview environment on every push, defaults to true"
     required: false
+  environment_type:
+    description: "Which environment to target: 'auto' (default) infers it from the event, where only a merged pull request into the default branch means master; 'master' or 'feature' state it outright. Set 'master' for a push-triggered deploy that promotes to the master alias, since a push carries no pull request to infer from"
+    required: false
   head_ref:
     description: "The branch to treat as the feature branch, overriding the event payload. Required to target a feature environment from a workflow_dispatch run, which has no pull request to read a head branch from. Accepts 'my-branch' or 'refs/heads/my-branch'"
     required: false

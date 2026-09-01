@@ -390,11 +390,56 @@ describe('getEnvironment', () => {
         makeConfig({ featurePattern: 'sandbox-fixed' })
       );
 
-      // A push to the default branch is still a "feature" environment: only a
-      // merged pull request produces the master environment.
+      // With environment_type at its "auto" default, a push to the default
+      // branch is still a "feature" environment: only a merged pull request
+      // infers the master environment. A workflow that means master on a push
+      // says so with environment_type; see below.
       expect(result.environmentType).toBe('feature');
       expect(result.environmentId).toBe('sandbox-fixed');
       expect(result.environmentNames).toEqual({ base: 'main', head: null });
+    });
+  });
+
+  describe('on a push with environment_type: master', () => {
+    it('creates the master environment from the master pattern', async () => {
+      setPushContext('refs/heads/main', 'main');
+      const space = makeSpace();
+
+      const result = await getEnvironment(
+        asSpace(space),
+        { headRef: null, baseRef: 'main', defaultBranch: 'main' },
+        makeConfig({
+          environmentType: 'master',
+          masterPattern: 'master-fixed',
+          // The bug this input exists for: a workflow that could not reach the
+          // alias pushed the master name through feature_pattern instead, and
+          // the run then tried to create an environment literally called
+          // "master" over the existing one.
+          featurePattern: 'master',
+        })
+      );
+
+      expect(result.environmentType).toBe('master');
+      expect(result.environmentId).toBe('master-fixed');
+      expect(space.createEnvironmentWithId).toHaveBeenCalledWith('master-fixed', {
+        name: 'master-fixed',
+      });
+    });
+  });
+
+  describe('on a merged pull request with environment_type: feature', () => {
+    it('creates a feature environment despite the event saying master', async () => {
+      setMergedPullRequestContext('feature/some-thing', 'main', 'main');
+      const space = makeSpace();
+
+      const result = await getEnvironment(
+        asSpace(space),
+        { headRef: 'feature/some-thing', baseRef: 'main', defaultBranch: 'main' },
+        makeConfig({ environmentType: 'feature', flushPreviewEnv: false })
+      );
+
+      expect(result.environmentType).toBe('feature');
+      expect(result.environmentId).toBe('GH-feature-some-thing');
     });
   });
 
